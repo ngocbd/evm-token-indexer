@@ -5,7 +5,6 @@ import { AppConfiguration, appConfiguration } from './config/configuration';
 import { User } from './entity/user.entity';
 import { HealthModule } from './health/health.module';
 import { ResponseInterceptor } from './interceptors/response.interceptor';
-import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -20,12 +19,11 @@ import { UsersModule } from './users/users.module';
         // eslint-disable-next-line @typescript-eslint/prefer-as-const
         type: 'postgres' as 'postgres',
         url: config.db.url,
-        entities: [User],
+        entities: [],
         synchronize: false,
         schema: 'index',
       }),
     }),
-    UsersModule,
   ],
   providers: [ResponseInterceptor],
 })

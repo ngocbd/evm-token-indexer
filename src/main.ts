@@ -8,8 +8,8 @@ import { ResponseInterceptor } from './interceptors/response.interceptor';
 
 const configureSwagger = (app: INestApplication) => {
   const swaggerDocOptions = new DocumentBuilder()
-    .setTitle('nest template')
-    .setDescription('The nest template API description')
+    .setTitle('EVM token indexer')
+    .setDescription('The EVM token indexer API description')
     .setVersion('1.0.0')
     .addBearerAuth(
       {
