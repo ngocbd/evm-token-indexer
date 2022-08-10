@@ -1,4 +1,4 @@
-import { ethers } from 'ethers';
+import {ethers} from 'ethers';
 import TokenType from '../enums/TokenType';
 import {
   ERC1155_INTERFACE_ID,
@@ -15,6 +15,11 @@ export default class ReadTransferEventWorker {
     this._provider = new ethers.providers.JsonRpcProvider(rpcUrl);
   }
 
+  get provider(): ethers.providers.JsonRpcProvider {
+    return this._provider;
+
+  }
+
   /*accept token address return token type*/
   async detectTokenType(tokenAddress: string): Promise<TokenType> {
     try {
@@ -25,15 +30,19 @@ export default class ReadTransferEventWorker {
         return TokenType.ERC721;
       } else if (isERC1155) {
         return TokenType.ERC1155;
+      } else {
+        return TokenType.UNKNOWN;
       }
     } catch (err) {
-      console.log(err.message);
       //try to detect ERC20 token
       const isErc20 = await this.isErc20(tokenAddress);
-      return isErc20 ? TokenType.ERC20 : TokenType.UNKNOWN;
+      if (isErc20) {
+        return TokenType.ERC20;
+      } else {
+        console.log('detect failed for token: ', tokenAddress);
+        return TokenType.UNKNOWN;
+      }
     }
-
-    return TokenType.ERC20;
   }
 
   async isErc20(tokenAddress: string): Promise<boolean> {
@@ -63,5 +72,16 @@ export default class ReadTransferEventWorker {
 
   getContract(address: string, abi: any) {
     return new ethers.Contract(address, abi, this._provider);
+  }
+
+  run(): void {
+    console.log('ReadTransferEventWorker is running');
+    this._provider.on("block", (block) => {
+      console.log(block)
+      // filter.toBlock = block.number;
+      // provider.getLogs(filter).then(res => {
+      //   console.log(res.length)
+      // })
+    })
   }
 }
