@@ -2,8 +2,9 @@ import { FormatTypes, Interface } from 'ethers/lib/utils';
 
 export const ERC721_INTERFACE_ID = '0x80ac58cd';
 export const ERC1155_INTERFACE_ID = '0xd9b67a26';
-export const SMART_CHAIN_TEST_NET_RPC_URL = "https://data-seed-prebsc-1-s1.binance.org:8545/"
-export const ETH_MAIN_NET_RPC_URL = "https://rpc.ankr.com/eth"
+export const SMART_CHAIN_TEST_NET_RPC_URL =
+  'https://data-seed-prebsc-1-s1.binance.org:8545/';
+export const ETH_MAIN_NET_RPC_URL = 'https://rpc.ankr.com/eth';
 
 export const ERC20_ABI = [
   {

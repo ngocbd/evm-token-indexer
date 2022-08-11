@@ -1,4 +1,4 @@
-import {ethers} from 'ethers';
+import { ethers } from 'ethers';
 import TokenType from '../enums/TokenType';
 import {
   ERC1155_INTERFACE_ID,
@@ -17,7 +17,6 @@ export default class ReadTransferEventWorker {
 
   get provider(): ethers.providers.JsonRpcProvider {
     return this._provider;
-
   }
 
   /*accept token address return token type*/
@@ -76,12 +75,12 @@ export default class ReadTransferEventWorker {
 
   run(): void {
     console.log('ReadTransferEventWorker is running');
-    this._provider.on("block", (block) => {
-      console.log(block)
+    this._provider.on('block', (block) => {
+      console.log(block);
       // filter.toBlock = block.number;
       // provider.getLogs(filter).then(res => {
       //   console.log(res.length)
       // })
-    })
+    });
   }
 }
