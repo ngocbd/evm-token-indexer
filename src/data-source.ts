@@ -8,7 +8,6 @@ import {
 } from './entity';
 import 'dotenv/config';
 
-console.log(process.env.DATABASE_USERNAME);
 export const AppDataSource = new DataSource({
   type: 'postgres',
   host: process.env.DATABASE_HOST,

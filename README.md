@@ -8,5 +8,6 @@ node, typescript, ethers, typeorm, postgresql
 
 - install dependencies: `npm install`
 - run application: `npm start`
+- run worker: `npm start {worker}` ex: `npm start publisher`
 - eslint fix:`npm run lint`
 - typescript build:`npm run build`
