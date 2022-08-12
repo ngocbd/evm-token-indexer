@@ -8,7 +8,9 @@
       "start": "ts-node src/main.ts",
       "build": "tsc",
       "lint": "eslint src --fix",
-      "typeorm": "typeorm-ts-node-commonjs"
+      "typeorm": "typeorm-ts-node-commonjs",
+      "worker": "ts-node src/main.ts",
+      "list-workers": "ts-node src/main.ts list-workers"
    },
    "repository": {
       "type": "git",

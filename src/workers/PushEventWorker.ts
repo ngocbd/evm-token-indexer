@@ -1,0 +1,44 @@
+import { ethers, utils } from 'ethers';
+import { Publisher } from './index';
+import { EVENT_TRANSFER_QUEUE_NAME } from '../constants';
+
+export default class PushEventWorker {
+  _provider: ethers.providers.JsonRpcProvider;
+  _publisher: Publisher;
+
+  constructor(provider: ethers.providers.JsonRpcProvider) {
+    this._provider = provider;
+    this._publisher = new Publisher(EVENT_TRANSFER_QUEUE_NAME);
+  }
+
+  //for demo purposes need to pass from and to block number
+  async run(fromBlock: number, toBlock: number) {
+    console.log('PushEventWorker is running');
+
+    const logs = await this._provider.getLogs({
+      fromBlock,
+      toBlock,
+    });
+    const transferEventLogs = logs.filter(
+      (item) =>
+        item.topics[0] === utils.id('Transfer(address,address,uint256)'),
+    );
+    console.log('transfer event count: ', transferEventLogs.length);
+    const transferEventsMap = new Map<string, Array<unknown>>();
+    transferEventLogs.forEach((item) => {
+      const contractAddress = item.address;
+      if (!transferEventsMap.has(contractAddress)) {
+        transferEventsMap.set(contractAddress, [item]);
+      } else {
+        const events = transferEventsMap.get(contractAddress) as Array<unknown>;
+        events.push(item);
+        transferEventsMap.set(contractAddress, events);
+      }
+    });
+
+    transferEventsMap.forEach((value: Array<unknown>) => {
+      const message = JSON.stringify(value);
+      this._publisher.pushMessage(message);
+    });
+  }
+}

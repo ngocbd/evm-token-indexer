@@ -5,14 +5,21 @@ import {
   ERC20_HUMAN_READABLE_ABI,
   ERC20_INTERFACE,
   ERC721_INTERFACE_ID,
+  EVENT_TRANSFER_QUEUE_NAME,
   INTERFACE_ERC155_ABI,
+  SAVE_DATA_QUEUE_NAME,
 } from '../constants';
+import { Publisher, Receiver } from './index';
 
-export default class ReadTransferEventWorker {
+export default class FilterEventWorker {
   _provider: ethers.providers.JsonRpcProvider;
+  _publisher: Publisher;
+  _receiver: Receiver;
 
-  constructor(rpcUrl: string) {
-    this._provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+  constructor(provider: ethers.providers.JsonRpcProvider) {
+    this._provider = provider;
+    this._publisher = new Publisher(SAVE_DATA_QUEUE_NAME);
+    this._receiver = new Receiver(EVENT_TRANSFER_QUEUE_NAME);
   }
 
   get provider(): ethers.providers.JsonRpcProvider {
@@ -73,14 +80,27 @@ export default class ReadTransferEventWorker {
     return new ethers.Contract(address, abi, this._provider);
   }
 
-  run(): void {
-    console.log('ReadTransferEventWorker is running');
-    this._provider.on('block', (block) => {
-      console.log(block);
-      // filter.toBlock = block.number;
-      // provider.getLogs(filter).then(res => {
-      //   console.log(res.length)
-      // })
+  async filterEventTransfer(message: string) {
+    //get first contract address of this message
+    //detect token type
+    //if token type is ERC1155, ERC 20, ERC721 then get all events of this contract and push to queue
+    //if not then do nothing
+    const listTransferEvents = JSON.parse(message);
+    const tokenAddress = listTransferEvents[0].address;
+    const tokenType = await this.detectTokenType(tokenAddress);
+    if (tokenType === TokenType.UNKNOWN) {
+      console.log('unknown token type for token: ', tokenAddress, ' skip...');
+      return;
+    }
+    //push to queue
+    const messageToQueue = JSON.stringify({
+      tokenType: tokenType,
+      transferEvents: listTransferEvents,
     });
+    await this._publisher.pushMessage(messageToQueue);
+  }
+
+  async run() {
+    await this._receiver.consumeMessage(this.filterEventTransfer.bind(this));
   }
 }
