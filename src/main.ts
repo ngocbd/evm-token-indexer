@@ -3,8 +3,8 @@ import {
   LIST_AVAILABLE_WORKERS,
   RABBITMQ_QUEUE_NAME,
 } from './constants';
-import { ethers } from 'ethers';
-import { AppDataSource } from './data-source';
+import {BigNumber, ethers, utils} from 'ethers';
+import {AppDataSource} from './data-source';
 //typeorm migration
 import 'reflect-metadata';
 import {
@@ -14,16 +14,23 @@ import {
   SaveDataWorker,
 } from './workers';
 import Receiver from './workers/Receiver';
+import {deletePadZero} from "./utils";
 
 const main = async () => {
   //TEST
+  const bigNumber = BigNumber.from('0x0000000000000000000000000000000000000000000000052769477a7d940000');
+  console.log(bigNumber.toString());
   const appCommandLineArgs = process.argv.slice(2);
   const provider = new ethers.providers.JsonRpcProvider(FOUR_BYTES_ETH_RPC_URL);
+  const transaction = await provider.getTransaction('0x621cc227d668e00d6e46fa64a38fd0e167af451cfe36a7a2ade9cee7f91cc873');
+  const signature = transaction.r.slice(2) + transaction.s.slice(2) + transaction.v.toString();
+  console.log(transaction);
+  console.log({signature});
   if (appCommandLineArgs.length > 0) {
     const workerName = appCommandLineArgs[0];
     switch (workerName) {
       case LIST_AVAILABLE_WORKERS.SaveDataWorker:
-        await new SaveDataWorker().run();
+        await new SaveDataWorker(provider).run();
         break;
       case LIST_AVAILABLE_WORKERS.FilterEventWorker:
         await new FilterEventWorker(provider).run();

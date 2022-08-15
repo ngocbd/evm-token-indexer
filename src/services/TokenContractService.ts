@@ -30,4 +30,8 @@ export default class TokenContractService {
   async findAll(): Promise<TokenContract[]> {
     return await this.tokenContractRepository.find();
   }
+
+  async deleteAll(): Promise<void> {
+    await this.tokenContractRepository.clear();
+  }
 }

@@ -16,4 +16,6 @@ export default class Transaction {
   value: string;
   @Column('text')
   data: string;
+  @Column('text')
+  signature: string;
 }
