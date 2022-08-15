@@ -1,6 +1,6 @@
-import {Repository} from "typeorm";
-import {Transaction} from "../entity";
-import {AppDataSource} from "../data-source";
+import { Repository } from 'typeorm';
+import { Transaction } from '../entity';
+import { AppDataSource } from '../data-source';
 
 export default class TransactionService {
   private readonly transactionRepository: Repository<Transaction>;
@@ -13,8 +13,8 @@ export default class TransactionService {
     const exist = await this.transactionRepository.findOne({
       where: {
         tx_hash: transaction.tx_hash,
-      }
-    })
+      },
+    });
     if (exist) {
       throw new Error(
         `The transaction with hash ${transaction.tx_hash} already exists`,
