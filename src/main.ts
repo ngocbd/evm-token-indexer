@@ -1,10 +1,9 @@
 import {
-  ETH_MAIN_NET_RPC_URL,
   FOUR_BYTES_ETH_RPC_URL,
   LIST_AVAILABLE_WORKERS,
   RABBITMQ_QUEUE_NAME,
 } from './constants';
-import {BigNumber, ethers} from 'ethers';
+import {ethers} from 'ethers';
 import {AppDataSource} from './data-source';
 //typeorm migration
 import 'reflect-metadata';
@@ -34,7 +33,7 @@ const main = async () => {
       case LIST_AVAILABLE_WORKERS.PushEventWorker:
         const pushEventWorker = new PushEventWorker(provider);
 
-         await pushEventWorker.run(10_000_004, 10_000_005)
+        await pushEventWorker.run(10_000_004, 10_000_005);
         break;
       case LIST_AVAILABLE_WORKERS.ReceiverWorker:
         await new Receiver(RABBITMQ_QUEUE_NAME).consumeMessage((msg) => {

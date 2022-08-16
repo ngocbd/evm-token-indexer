@@ -10,7 +10,7 @@ import {
   SAVE_DATA_QUEUE_NAME,
 } from '../constants';
 import { Publisher, Receiver } from './index';
-import {TokenContractService} from "../services";
+import { TokenContractService } from '../services';
 
 export default class FilterEventWorker {
   _provider: ethers.providers.JsonRpcProvider;
@@ -90,7 +90,9 @@ export default class FilterEventWorker {
     const listTransferEvents = JSON.parse(message);
     const tokenAddress = listTransferEvents[0].address;
     //try to check token type in db first before using the detectTokenType function
-    const tokenContract = await this._tokenContractService.findByAddress(tokenAddress)
+    const tokenContract = await this._tokenContractService.findByAddress(
+      tokenAddress,
+    );
     let tokenType: TokenType;
     let isNewToken = false;
     if (tokenContract) {
