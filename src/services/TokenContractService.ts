@@ -1,6 +1,6 @@
-import { Repository } from 'typeorm';
-import { AppDataSource } from '../data-source';
-import { TokenContract } from '../entity';
+import {Repository} from 'typeorm';
+import {AppDataSource} from '../data-source';
+import {TokenContract} from '../entity';
 
 export default class TokenContractService {
   private readonly tokenContractRepository: Repository<TokenContract>;
@@ -13,12 +13,11 @@ export default class TokenContractService {
     try {
       //throw error when pk existed if not typeorm auto update
       const exist = await this.tokenContractRepository.findOne({
-        where: { address: tokenContract.address },
+        where: {address: tokenContract.address},
       });
       if (exist) {
-        throw new Error(
-          `The token with address ${tokenContract.address} already exists`,
-        );
+        console.log(`The token contract with address ${tokenContract.address} already exists`);
+        return exist;
       }
       return await this.tokenContractRepository.save(tokenContract);
     } catch (err) {
@@ -29,6 +28,17 @@ export default class TokenContractService {
 
   async findAll(): Promise<TokenContract[]> {
     return await this.tokenContractRepository.find();
+  }
+
+  async findByAddress(address: string): Promise<TokenContract> {
+    try {
+      return await this.tokenContractRepository.findOne({
+        where: {address},
+      });
+    } catch (err) {
+      console.log(err);
+      return null;
+    }
   }
 
   async deleteAll(): Promise<void> {

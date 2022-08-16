@@ -10,16 +10,19 @@ import {
   SAVE_DATA_QUEUE_NAME,
 } from '../constants';
 import { Publisher, Receiver } from './index';
+import {TokenContractService} from "../services";
 
 export default class FilterEventWorker {
   _provider: ethers.providers.JsonRpcProvider;
   _publisher: Publisher;
   _receiver: Receiver;
+  _tokenContractService: TokenContractService;
 
   constructor(provider: ethers.providers.JsonRpcProvider) {
     this._provider = provider;
     this._publisher = new Publisher(SAVE_DATA_QUEUE_NAME);
     this._receiver = new Receiver(EVENT_TRANSFER_QUEUE_NAME);
+    this._tokenContractService = new TokenContractService();
   }
 
   get provider(): ethers.providers.JsonRpcProvider {
@@ -79,15 +82,23 @@ export default class FilterEventWorker {
   getContract(address: string, abi: any) {
     return new ethers.Contract(address, abi, this._provider);
   }
-
+  //get first contract address of this message
+  //detect token type
+  //if token type is ERC1155, ERC 20, ERC721 then get all events of this contract and push to queue
+  //if not then do nothing
   async filterEventTransfer(message: string) {
-    //get first contract address of this message
-    //detect token type
-    //if token type is ERC1155, ERC 20, ERC721 then get all events of this contract and push to queue
-    //if not then do nothing
     const listTransferEvents = JSON.parse(message);
     const tokenAddress = listTransferEvents[0].address;
-    const tokenType = await this.detectTokenType(tokenAddress);
+    //try to check token type in db first before using the detectTokenType function
+    const tokenContract = await this._tokenContractService.findByAddress(tokenAddress)
+    let tokenType: TokenType;
+    let isNewToken = false;
+    if (tokenContract) {
+      tokenType = tokenContract.type;
+    } else {
+      tokenType = await this.detectTokenType(tokenAddress);
+      isNewToken = true;
+    }
     if (tokenType === TokenType.UNKNOWN) {
       console.log('unknown token type for token: ', tokenAddress, ' skip...');
       return;
@@ -96,6 +107,7 @@ export default class FilterEventWorker {
     const messageToQueue = JSON.stringify({
       tokenType: tokenType,
       transferEvents: listTransferEvents,
+      isNewToken: isNewToken,
     });
     await this._publisher.pushMessage(messageToQueue);
   }
