@@ -3,8 +3,8 @@ import {
   LIST_AVAILABLE_WORKERS,
   RABBITMQ_QUEUE_NAME,
 } from './constants';
-import { ethers } from 'ethers';
-import { AppDataSource } from './data-source';
+import {ethers, utils} from 'ethers';
+import {AppDataSource} from './data-source';
 //typeorm migration
 import 'reflect-metadata';
 import {
@@ -21,12 +21,6 @@ import logger from './logger';
 const main = async () => {
   const appCommandLineArgs = process.argv.slice(2);
   const provider = new ethers.providers.JsonRpcProvider(ETH_MAIN_NET_RPC_URL);
-  console.log('main is running');
-  logger.info('Text info');
-  logger.warn('Text warn');
-  logger.error('Text error');
-  logger.debug('Text debug');
-  logger.error(new Error('Error').message);
   if (appCommandLineArgs.length > 0) {
     const workerName = appCommandLineArgs[0];
     switch (workerName) {
@@ -39,7 +33,7 @@ const main = async () => {
       case LIST_AVAILABLE_WORKERS.PushEventWorker:
         const pushEventWorker = new PushEventWorker(provider);
 
-        await pushEventWorker.run(10_000_002, 10_000_004);
+        await pushEventWorker.run(15_358_282, 15_358_283);
         break;
       case LIST_AVAILABLE_WORKERS.ReceiverWorker:
         await new Receiver(RABBITMQ_QUEUE_NAME).consumeMessage((msg) => {

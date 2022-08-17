@@ -1,6 +1,6 @@
-import { ethers, utils } from 'ethers';
-import { Publisher } from './index';
-import { EVENT_TRANSFER_QUEUE_NAME } from '../constants';
+import {ethers, utils} from 'ethers';
+import {Publisher} from './index';
+import {EVENT_TRANSFER_QUEUE_NAME} from '../constants';
 
 export default class PushEventWorker {
   _provider: ethers.providers.JsonRpcProvider;
@@ -14,14 +14,18 @@ export default class PushEventWorker {
   //for demo purposes need to pass from and to block number
   async run(fromBlock: number, toBlock: number) {
     console.log('PushEventWorker is running');
-
+    const erc20TransferMethodTopic = utils.id('Transfer(address,address,uint256)');
+    const erc1155TransferSingleTopic = utils.id("TransferSingle(address,address,address,uint256,uint256)");
+    const erc1155TransferBatchTopic = utils.id("TransferBatch(address,address,address,uint256[],uint256[])");
     const logs = await this._provider.getLogs({
       fromBlock,
       toBlock,
     });
     const transferEventLogs = logs.filter(
       (item) =>
-        item.topics[0] === utils.id('Transfer(address,address,uint256)'),
+        item.topics[0] === erc20TransferMethodTopic ||
+        item.topics[0] === erc1155TransferBatchTopic ||
+        item.topics[0] === erc1155TransferSingleTopic,
     );
     console.log('transfer event count: ', transferEventLogs.length);
     const transferEventsMap = new Map<string, Array<unknown>>();
