@@ -19,6 +19,7 @@ import logger from './logger';
 //current forbyte block: 15_324_503,
 //current eth block: 15_351_274
 const main = async () => {
+  logger.info('Started');
   const appCommandLineArgs = process.argv.slice(2);
   const provider = new ethers.providers.JsonRpcProvider(ETH_MAIN_NET_RPC_URL);
   if (appCommandLineArgs.length > 0) {
