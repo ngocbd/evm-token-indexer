@@ -86,6 +86,7 @@ export default class FilterEventWorker {
   //detect token type
   //if token type is ERC1155, ERC 20, ERC721 then get all events of this contract and push to queue
   //if not then do nothing
+  //if an error occurs, retry 3 times if failed saved error log
   async filterEventTransfer(message: string) {
     const listTransferEvents = JSON.parse(message);
     const tokenAddress = listTransferEvents[0].address;

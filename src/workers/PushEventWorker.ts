@@ -12,6 +12,7 @@ export default class PushEventWorker {
   }
 
   //for demo purposes need to pass from and to block number
+  //TODO: check last push block number from db or from queue
   async run(fromBlock: number, toBlock: number) {
     console.log('PushEventWorker is running');
     const erc20TransferMethodTopic = utils.id('Transfer(address,address,uint256)');

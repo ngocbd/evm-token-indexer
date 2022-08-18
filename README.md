@@ -12,7 +12,7 @@ node, typescript, ethers, typeorm, postgresql
 - List available workers: `npm run list-workers`
 - eslint fix:`npm run lint`
 - typescript build:`npm run build`
-- to run built js version: `node dist/main.js` run worker: `node dist/main.js {WorkerName}`
+- to run built js version: `node build/main.js` run worker: `node build/main.js {WorkerName}`
 
 # Logger:
 

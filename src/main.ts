@@ -1,5 +1,5 @@
 import {
-  ETH_MAIN_NET_RPC_URL,
+  ETH_MAIN_NET_RPC_URL, FOUR_BYTES_ETH_RPC_URL,
   LIST_AVAILABLE_WORKERS,
   RABBITMQ_QUEUE_NAME,
 } from './constants';
@@ -19,16 +19,11 @@ import logger from './logger';
 //current forbyte block: 15_324_503,
 //current eth block: 15_351_274
 const main = async () => {
-  logger.info('Started');
-  logger.warn('Warning');
-  logger.error('Error');
-  logger.debug('Debug');
-  logger.verbose('Verbose');
-  logger.silly('Silly');
-  logger.http('Http');
-  logger.error(new Error('Error'));
+
   const appCommandLineArgs = process.argv.slice(2);
   const provider = new ethers.providers.JsonRpcProvider(ETH_MAIN_NET_RPC_URL);
+  const block = await provider.getBlock('latest');
+  console.log(block.number);
   if (appCommandLineArgs.length > 0) {
     const workerName = appCommandLineArgs[0];
     switch (workerName) {
