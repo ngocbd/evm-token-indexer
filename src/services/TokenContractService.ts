@@ -10,22 +10,7 @@ export default class TokenContractService {
   }
 
   async save(tokenContract: TokenContract): Promise<TokenContract> {
-    try {
-      //throw error when pk existed if not typeorm auto update
-      const exist = await this.tokenContractRepository.findOne({
-        where: { address: tokenContract.address },
-      });
-      if (exist) {
-        console.log(
-          `The token contract with address ${tokenContract.address} already exists`,
-        );
-        return exist;
-      }
-      return await this.tokenContractRepository.save(tokenContract);
-    } catch (err) {
-      console.log(err);
-      return null;
-    }
+    return await this.tokenContractRepository.save(tokenContract);
   }
 
   async findAll(): Promise<TokenContract[]> {

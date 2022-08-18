@@ -12,8 +12,9 @@ import {
 } from '../constants';
 import { Publisher, Receiver } from './index';
 import { TokenContractService } from '../services';
-import { getContract } from '../utils';
+import { getContract, sleep } from '../utils';
 import { TokenContract } from '../entity';
+import logger from '../logger';
 
 export default class FilterEventWorker {
   _provider: ethers.providers.JsonRpcProvider;
@@ -33,8 +34,17 @@ export default class FilterEventWorker {
   }
 
   /*accept token address return token type*/
-  async detectTokenType(tokenAddress: string): Promise<TokenType> {
+  async detectTokenType(
+    tokenAddress: string,
+    maxRetries = 3,
+    retryTime = 1000,
+  ): Promise<TokenType> {
     try {
+      const isErc20 = await this.isErc20(tokenAddress);
+      if (isErc20) {
+        return TokenType.ERC20;
+      }
+      //detect erc 721 or 1155
       const contract = getContract(
         tokenAddress,
         INTERFACE_ERC155_ABI,
@@ -50,14 +60,18 @@ export default class FilterEventWorker {
         return TokenType.UNKNOWN;
       }
     } catch (err) {
-      //try to detect ERC20 token
-      const isErc20 = await this.isErc20(tokenAddress);
-      if (isErc20) {
-        return TokenType.ERC20;
-      } else {
-        console.log('detect failed for token: ', tokenAddress);
-        return TokenType.UNKNOWN;
+      //retry
+      if (maxRetries > 0) {
+        logger.warn(
+          `detect token type failed for token: ${tokenAddress}: ${err} retrying...`,
+        );
+        await sleep(retryTime);
+        return this.detectTokenType(tokenAddress, maxRetries - 1);
       }
+      logger.error(
+        `detect token type failed for token: ${tokenAddress} : ${err}`,
+      );
+      return TokenType.UNKNOWN;
     }
   }
 
@@ -84,7 +98,7 @@ export default class FilterEventWorker {
         decimals,
       };
     } catch (err: any) {
-      console.log(
+      logger.error(
         'get erc20 metadata failed for token: ',
         tokenAddress,
         ' error: ',
@@ -99,28 +113,23 @@ export default class FilterEventWorker {
   }
 
   async isErc20(tokenAddress: string): Promise<boolean> {
-    try {
-      const bytecode = await this._provider.getCode(tokenAddress);
-      let isErc20 = true;
-      for (let i = 0; i < ERC20_HUMAN_READABLE_ABI.length; i++) {
-        const abi = ERC20_HUMAN_READABLE_ABI[i];
-        //skip constructor and event
-        if (abi.includes('constructor') || abi.includes('event')) {
-          continue;
-        }
-        const methodDefinition = abi.replace('function', '').trim();
-        const methodSelector = ERC20_INTERFACE.getSighash(methodDefinition);
-        const methodSelectorHex = methodSelector.substring(2);
-        if (!bytecode.includes(methodSelectorHex)) {
-          isErc20 = false;
-          break;
-        }
+    const bytecode = await this._provider.getCode(tokenAddress);
+    let isErc20 = true;
+    for (let i = 0; i < ERC20_HUMAN_READABLE_ABI.length; i++) {
+      const abi = ERC20_HUMAN_READABLE_ABI[i];
+      //skip constructor and event
+      if (abi.includes('constructor') || abi.includes('event')) {
+        continue;
       }
-      return isErc20;
-    } catch (err) {
-      console.log('in check erc20 function: ', err.message);
-      return false;
+      const methodDefinition = abi.replace('function', '').trim();
+      const methodSelector = ERC20_INTERFACE.getSighash(methodDefinition);
+      const methodSelectorHex = methodSelector.substring(2);
+      if (!bytecode.includes(methodSelectorHex)) {
+        isErc20 = false;
+        break;
+      }
     }
+    return isErc20;
   }
 
   //get first contract address of this message
@@ -144,6 +153,7 @@ export default class FilterEventWorker {
         isNewToken: false,
       });
       await this._publisher.pushMessage(messageToQueue);
+      logger.info(`push message to queue for exist token: ${tokenAddress}`);
       return;
     }
     //detect token type
@@ -152,7 +162,7 @@ export default class FilterEventWorker {
     tokenContract.type = tokenType;
     tokenContract.address = tokenAddress;
     if (tokenType === TokenType.UNKNOWN) {
-      console.log('unknown token type for token: ', tokenAddress, ' skip...');
+      logger.info('unknown token type for token: ', tokenAddress, ' skip...');
       return;
     }
     //get the token meta data for erc20 token
@@ -164,13 +174,13 @@ export default class FilterEventWorker {
     //save block number that this token is detected
     tokenContract.block_number = firstTransferEvent.blockNumber;
     //push to queue
-    //push to queue
     const messageToQueue = JSON.stringify({
       tokenContract,
       transferEvents: listTransferEvents,
       isNewToken: true,
     });
     await this._publisher.pushMessage(messageToQueue);
+    logger.info(`push message to queue for new token: ${tokenAddress}`);
     return;
   }
 

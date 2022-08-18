@@ -31,7 +31,7 @@ const main = async () => {
       case LIST_AVAILABLE_WORKERS.PushEventWorker:
         const pushEventWorker = new PushEventWorker(provider);
 
-        await pushEventWorker.run(15_358_200, 15_358_203);
+        await pushEventWorker.run(15_358_215, 15_358_216);
         break;
       case LIST_AVAILABLE_WORKERS.ReceiverWorker:
         await new Receiver(RABBITMQ_QUEUE_NAME).consumeMessage((msg) => {

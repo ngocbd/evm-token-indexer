@@ -6,8 +6,9 @@ import {
 } from '../services';
 import { SAVE_DATA_QUEUE_NAME } from '../constants';
 import { TokenContract, Transaction, TransferEvent } from '../entity';
-import { deletePadZero } from '../utils';
+import { deletePadZero, sleep } from '../utils';
 import { BigNumber, ethers } from 'ethers';
+import logger from '../logger';
 
 export default class SaveDataWorker {
   _receiver: Receiver;
@@ -29,6 +30,7 @@ export default class SaveDataWorker {
     tokenAddress: string,
   ): Promise<TransferEvent | null> {
     try {
+      //fallback value when failed to get data
       const toSaveTransferEvent = new TransferEvent();
       toSaveTransferEvent.log_index = transferEvent.logIndex;
       toSaveTransferEvent.tx_hash = transferEvent.transactionHash;
@@ -41,21 +43,27 @@ export default class SaveDataWorker {
       try {
         amount = BigNumber.from(transferEvent.data).toString();
       } catch (convertError) {
+        //this happen when non erc20 token is transferred
         amount = transferEvent.data;
       }
       toSaveTransferEvent.amount = amount;
       const res = await this._transferEventService.save(toSaveTransferEvent);
       return res;
     } catch (err: any) {
-      console.log(
+      logger.error(
         `Save transfer event failed for ${transferEvent.transactionHash} msg: ${err.message}`,
       );
       return null;
     }
   }
 
-  async saveTransaction(transaction: ethers.providers.TransactionResponse) {
+  async saveTransaction(
+    transactionHash: string,
+    maxRetries = 3,
+    retryTime = 1000,
+  ): Promise<Transaction | null> {
     try {
+      const transaction = await this._provider.getTransaction(transactionHash);
       const toSaveTransaction = new Transaction();
       toSaveTransaction.tx_hash = transaction.hash;
       toSaveTransaction.block_number = BigInt(transaction.blockNumber);
@@ -71,10 +79,30 @@ export default class SaveDataWorker {
       toSaveTransaction.signature = signature;
       return await this._transactionService.save(toSaveTransaction);
     } catch (err: any) {
-      console.log(
-        `Save transaction failed for ${transaction.hash} msg: ${err.message}`,
-      );
-      return null;
+      if (maxRetries > 0) {
+        logger.warn(
+          `Save transaction failed for ${transactionHash} msg: ${err.message} retrying...`,
+        );
+        await sleep(retryTime);
+        return this.saveTransaction(transactionHash, maxRetries - 1, retryTime);
+      }
+      //if max retries is reached, save only txn hash
+      try {
+        const toSaveTransaction = new Transaction();
+        toSaveTransaction.tx_hash = transactionHash;
+        toSaveTransaction.block_number = BigInt(-1);
+        toSaveTransaction.gasPrice = '-1';
+        toSaveTransaction.nonce = BigInt(-1);
+        toSaveTransaction.to = '0x';
+        toSaveTransaction.value = '0x';
+        toSaveTransaction.data = '0x';
+        toSaveTransaction.signature = '';
+        return await this._transactionService.save(toSaveTransaction);
+      } catch (err2) {
+        logger.error(
+          `Save transaction failed for ${transactionHash} msg: ${err2.message} `,
+        );
+      }
     }
   }
 
@@ -86,63 +114,48 @@ export default class SaveDataWorker {
         isNewToken: boolean;
       } = JSON.parse(message);
       //save token contract only when it's new
-
       if (data.isNewToken) {
         await this._tokenContractService.save(data.tokenContract);
+        logger.info(`Saved token contract ${data.tokenContract.address}`);
       }
-      //save data
-      let transactionHash = '';
-      const res = await Promise.all(
+
+      let toSaveTxnHash = '';
+      await Promise.all(
         data.transferEvents.map(async (transferEvent: any) => {
           try {
             const savedTransferEvent = await this.saveTransferEvent(
               transferEvent,
               data.tokenContract.address,
             );
+            const currentEventTxnHash = transferEvent.transactionHash;
 
-            const transaction = await this._provider.getTransaction(
-              transferEvent.transactionHash,
-            );
-            if (!transaction) {
-              throw new Error(
-                `Transaction not found for ${transferEvent.transactionHash}`,
-              );
-            }
-            const eventTxHash = transaction.hash;
             //save transaction only when it is not saved yet
             let savedTransaction: Transaction;
-            if (eventTxHash !== transactionHash) {
-              transactionHash = eventTxHash;
-              savedTransaction = await this.saveTransaction(transaction);
+            if (currentEventTxnHash !== toSaveTxnHash) {
+              toSaveTxnHash = currentEventTxnHash;
+              savedTransaction = await this.saveTransaction(toSaveTxnHash);
             }
-            return {
-              savedTransferEvent,
-              savedTransaction,
-            };
+            if (savedTransaction) {
+              logger.info(`Saved transaction ${savedTransaction.tx_hash}`);
+            }
+            if (savedTransferEvent) {
+              logger.info(
+                `Saved transfer event ${savedTransferEvent.tx_hash} log_index: ${savedTransferEvent.log_index}`,
+              );
+            }
           } catch (err) {
-            console.log(
-              `Saved data failed for transfer event at txn ${transferEvent.transactionHash} msg: ${err.message}`,
+            logger.error(
+              `Saved txn and transfer event promise failed at txn ${transferEvent.transactionHash} log_index: ${transferEvent.logIndex} msg: ${err.message}`,
             );
-            return null;
           }
         }),
       );
-
-      console.log(
-        `transfer events record saved: ${
-          res.filter((x: any) => x && x.savedTransferEvent).length
-        }`,
-      );
-      console.log(
-        `transactions record saved: ${
-          res.filter((x: any) => x && x.savedTransaction).length
-        }`,
-      );
     } catch (err: any) {
-      console.log(`Save token contract failed: `, err);
+      logger.error(`Save data failed for ${message} msg: ${err.message}`);
     }
   }
 
+  //IMPORTANT: this method will delete all data in the database
   async clearAllData() {
     await this._tokenContractService.deleteAll();
     await this._transferEventService.deleteAll();

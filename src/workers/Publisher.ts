@@ -1,5 +1,6 @@
 import * as amqp from 'amqplib';
 import 'dotenv/config';
+import logger from '../logger';
 
 export default class Publisher {
   private readonly _queueName: string;
@@ -30,10 +31,10 @@ export default class Publisher {
       await channel.assertQueue(this._queueName, {
         durable: false,
       });
+
       await channel.sendToQueue(this._queueName, Buffer.from(message));
-      console.log('[AMQP] Sent %s', message);
     } catch (err) {
-      console.error('[AMQP]', err.message);
+      logger.error('[AMQP]', err.message);
       // return setTimeout(this.setupRabbitMQ, 1000);
     }
   }

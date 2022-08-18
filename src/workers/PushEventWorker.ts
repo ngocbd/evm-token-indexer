@@ -1,6 +1,7 @@
 import { ethers, utils } from 'ethers';
 import { Publisher } from './index';
 import { EVENT_TRANSFER_QUEUE_NAME } from '../constants';
+import logger from '../logger';
 
 export default class PushEventWorker {
   _provider: ethers.providers.JsonRpcProvider;
@@ -56,6 +57,9 @@ export default class PushEventWorker {
       const events = result.value;
       const message = JSON.stringify(events);
       await this._publisher.pushMessage(message);
+      logger.info(
+        `Push ${events.length} events of token ${events[0].address} to queue`,
+      );
     }
   }
 }
