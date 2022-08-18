@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import {DataSource} from 'typeorm';
+import { DataSource } from 'typeorm';
 import {
   TokenBalance,
   TokenContract,
@@ -13,8 +13,8 @@ import {
   DATABASE_PASSWORD,
   DATABASE_PORT,
   DATABASE_SCHEMA,
-  DATABASE_USERNAME
-} from "./constants";
+  DATABASE_USERNAME,
+} from './constants';
 
 export const AppDataSource = new DataSource({
   type: 'postgres',

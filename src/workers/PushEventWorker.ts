@@ -1,6 +1,6 @@
-import {ethers, utils} from 'ethers';
-import {Publisher} from './index';
-import {EVENT_TRANSFER_QUEUE_NAME} from '../constants';
+import { ethers, utils } from 'ethers';
+import { Publisher } from './index';
+import { EVENT_TRANSFER_QUEUE_NAME } from '../constants';
 
 export default class PushEventWorker {
   _provider: ethers.providers.JsonRpcProvider;
@@ -15,9 +15,15 @@ export default class PushEventWorker {
   //TODO: check last push block number from db or from queue
   async run(fromBlock: number, toBlock: number) {
     console.log('PushEventWorker is running');
-    const erc20TransferMethodTopic = utils.id('Transfer(address,address,uint256)');
-    const erc1155TransferSingleTopic = utils.id("TransferSingle(address,address,address,uint256,uint256)");
-    const erc1155TransferBatchTopic = utils.id("TransferBatch(address,address,address,uint256[],uint256[])");
+    const erc20TransferMethodTopic = utils.id(
+      'Transfer(address,address,uint256)',
+    );
+    const erc1155TransferSingleTopic = utils.id(
+      'TransferSingle(address,address,address,uint256,uint256)',
+    );
+    const erc1155TransferBatchTopic = utils.id(
+      'TransferBatch(address,address,address,uint256[],uint256[])',
+    );
     const logs = await this._provider.getLogs({
       fromBlock,
       toBlock,
@@ -29,21 +35,27 @@ export default class PushEventWorker {
         item.topics[0] === erc1155TransferSingleTopic,
     );
     console.log('transfer event count: ', transferEventLogs.length);
-    const transferEventsMap = new Map<string, Array<unknown>>();
+    const transferEventsMap = new Map<string, unknown[]>();
     transferEventLogs.forEach((item) => {
       const contractAddress = item.address;
       if (!transferEventsMap.has(contractAddress)) {
         transferEventsMap.set(contractAddress, [item]);
       } else {
-        const events = transferEventsMap.get(contractAddress) as Array<unknown>;
+        const events = transferEventsMap.get(contractAddress) as unknown[];
         events.push(item);
         transferEventsMap.set(contractAddress, events);
       }
     });
 
-    transferEventsMap.forEach((value: Array<unknown>) => {
-      const message = JSON.stringify(value);
-      this._publisher.pushMessage(message);
-    });
+    const currentCursor = transferEventsMap.values();
+    while (true) {
+      const result = currentCursor.next();
+      if (result.done) {
+        break;
+      }
+      const events = result.value;
+      const message = JSON.stringify(events);
+      await this._publisher.pushMessage(message);
+    }
   }
 }

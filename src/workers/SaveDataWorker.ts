@@ -80,15 +80,15 @@ export default class SaveDataWorker {
 
   async saveData(message: string) {
     try {
-      const data: { transferEvents: any; tokenType: any; isNewToken: boolean } =
-        JSON.parse(message);
-      const tokenType = data.tokenType;
-      const tokenAddress = data.transferEvents[0].address;
-      let tokenContract = new TokenContract();
-      tokenContract.type = tokenType;
-      tokenContract.address = tokenAddress;
+      const data: {
+        transferEvents: any;
+        tokenContract: TokenContract;
+        isNewToken: boolean;
+      } = JSON.parse(message);
+      //save token contract only when it's new
+
       if (data.isNewToken) {
-        tokenContract = await this._tokenContractService.save(tokenContract);
+        await this._tokenContractService.save(data.tokenContract);
       }
       //save data
       let transactionHash = '';
@@ -97,7 +97,7 @@ export default class SaveDataWorker {
           try {
             const savedTransferEvent = await this.saveTransferEvent(
               transferEvent,
-              tokenContract.address,
+              data.tokenContract.address,
             );
 
             const transaction = await this._provider.getTransaction(
@@ -150,6 +150,7 @@ export default class SaveDataWorker {
   }
 
   async run() {
+    // await this.clearAllData();
     await this._receiver.consumeMessage(this.saveData.bind(this));
   }
 }

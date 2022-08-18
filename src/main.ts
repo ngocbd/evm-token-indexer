@@ -1,10 +1,10 @@
 import {
-  ETH_MAIN_NET_RPC_URL, FOUR_BYTES_ETH_RPC_URL,
+  ETH_MAIN_NET_RPC_URL,
   LIST_AVAILABLE_WORKERS,
   RABBITMQ_QUEUE_NAME,
 } from './constants';
-import {ethers, utils} from 'ethers';
-import {AppDataSource} from './data-source';
+import { ethers } from 'ethers';
+import { AppDataSource } from './data-source';
 //typeorm migration
 import 'reflect-metadata';
 import {
@@ -15,15 +15,10 @@ import {
 } from './workers';
 import Receiver from './workers/Receiver';
 import logger from './logger';
-//
-//current forbyte block: 15_324_503,
-//current eth block: 15_351_274
-const main = async () => {
 
+const main = async () => {
   const appCommandLineArgs = process.argv.slice(2);
   const provider = new ethers.providers.JsonRpcProvider(ETH_MAIN_NET_RPC_URL);
-  const block = await provider.getBlock('latest');
-  console.log(block.number);
   if (appCommandLineArgs.length > 0) {
     const workerName = appCommandLineArgs[0];
     switch (workerName) {
@@ -36,7 +31,7 @@ const main = async () => {
       case LIST_AVAILABLE_WORKERS.PushEventWorker:
         const pushEventWorker = new PushEventWorker(provider);
 
-        await pushEventWorker.run(15_358_282, 15_358_283);
+        await pushEventWorker.run(15_358_200, 15_358_203);
         break;
       case LIST_AVAILABLE_WORKERS.ReceiverWorker:
         await new Receiver(RABBITMQ_QUEUE_NAME).consumeMessage((msg) => {
@@ -65,8 +60,7 @@ const main = async () => {
 AppDataSource.initialize()
   .then(async () => {
     await main();
-    return;
   })
   .catch((error) => {
-    console.log('init error: ', error);
+    logger.error('init error: ' + error);
   });

@@ -1,4 +1,4 @@
-import {Entity, Column, PrimaryColumn} from 'typeorm';
+import { Entity, Column, PrimaryColumn } from 'typeorm';
 import TokenType from '../enums/TokenType';
 
 @Entity('token_contracts')
@@ -38,5 +38,5 @@ export default class TokenContract {
   @Column({
     nullable: true,
   })
-  block_number: string
+  block_number: string;
 }
