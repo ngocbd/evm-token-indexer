@@ -28,13 +28,14 @@ export default class Publisher {
       //   return setTimeout(async () => await this.pushMessage(message), 1000);
       // });
       const channel = await connection.createChannel();
-      await channel.assertQueue(this._queueName, {
+      const queue = await channel.assertQueue(this._queueName, {
         durable: false,
-      });
-
+      })
       await channel.sendToQueue(this._queueName, Buffer.from(message));
+      return queue
     } catch (err) {
       logger.error('[AMQP]', err.message);
+      return null;
       // return setTimeout(this.setupRabbitMQ, 1000);
     }
   }

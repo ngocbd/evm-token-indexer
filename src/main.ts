@@ -3,8 +3,8 @@ import {
   LIST_AVAILABLE_WORKERS,
   RABBITMQ_QUEUE_NAME,
 } from './constants';
-import { ethers } from 'ethers';
-import { AppDataSource } from './data-source';
+import {ethers} from 'ethers';
+import {AppDataSource} from './data-source';
 //typeorm migration
 import 'reflect-metadata';
 import {
@@ -15,11 +15,11 @@ import {
 } from './workers';
 import Receiver from './workers/Receiver';
 import logger from './logger';
+import {sleep} from "./utils";
 
 const main = async () => {
   const appCommandLineArgs = process.argv.slice(2);
   const provider = new ethers.providers.JsonRpcProvider(ETH_MAIN_NET_RPC_URL);
-  console.log('hello');
   if (appCommandLineArgs.length > 0) {
     const workerName = appCommandLineArgs[0];
     switch (workerName) {
@@ -35,14 +35,16 @@ const main = async () => {
         await pushEventWorker.run(15_358_215, 15_358_216);
         break;
       case LIST_AVAILABLE_WORKERS.ReceiverWorker:
-        await new Receiver(RABBITMQ_QUEUE_NAME).consumeMessage((msg) => {
+        await new Receiver(RABBITMQ_QUEUE_NAME).consumeMessage(async (msg) => {
+          console.log('sleep 1s');
+          await sleep(1000);
           console.log(msg);
         });
         break;
       case LIST_AVAILABLE_WORKERS.PublisherWorker:
         const publisherWorker = new Publisher(RABBITMQ_QUEUE_NAME);
         for (let i = 0; i < 10; i++) {
-          await publisherWorker.pushMessage('Em huy dz hai ba ' + i);
+          await publisherWorker.pushMessage(`Hello ${i}`);
         }
         break;
       case 'list-workers':

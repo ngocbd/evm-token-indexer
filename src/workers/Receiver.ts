@@ -9,7 +9,7 @@ export default class Receiver {
     this._queueName = queueName;
   }
 
-  async consumeMessage(messageHandler: (message: string) => void) {
+  async consumeMessage(messageHandler: (message: string) => any) {
     let connection = Receiver._rabbitMQConnection;
     if (!connection) {
       console.log('[AMQP] create connection');
@@ -26,13 +26,14 @@ export default class Receiver {
     );
     channel.consume(
       this._queueName,
-      async (msg) => {
+      (msg) => {
         const msqContent = msg.content.toString();
-        await messageHandler(msqContent);
-      },
-      {
-        noAck: true,
-      },
+        //remove message from queue only when messageHandler is done
+        messageHandler(msqContent).then(() => {
+          console.log(' [x] Done');
+          channel.ack(msg);
+        });
+      }
     );
   }
 }
