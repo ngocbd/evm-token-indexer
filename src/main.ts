@@ -19,6 +19,7 @@ import logger from './logger';
 const main = async () => {
   const appCommandLineArgs = process.argv.slice(2);
   const provider = new ethers.providers.JsonRpcProvider(ETH_MAIN_NET_RPC_URL);
+  console.log('hello');
   if (appCommandLineArgs.length > 0) {
     const workerName = appCommandLineArgs[0];
     switch (workerName) {
