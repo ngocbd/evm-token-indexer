@@ -34,7 +34,7 @@ export default class Publisher {
       await channel.sendToQueue(this._queueName, Buffer.from(message));
       return queue;
     } catch (err) {
-      logger.error('[AMQP]', err.message);
+      logger.error('AMPQ error: ', err);
       return null;
       // return setTimeout(this.setupRabbitMQ, 1000);
     }
