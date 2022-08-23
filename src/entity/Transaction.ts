@@ -12,6 +12,10 @@ export default class Transaction {
   nonce: bigint;
   @Column()
   to: string;
+  @Column({
+    nullable: true,
+  })
+  from: string;
   @Column()
   value: string;
   @Column('text')

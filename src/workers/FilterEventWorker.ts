@@ -153,7 +153,9 @@ export default class FilterEventWorker {
         isNewToken: false,
       });
       await this._publisher.pushMessage(messageToQueue);
-      logger.info(`push message to queue for exist token: ${tokenAddress}`);
+      logger.info(
+        `push message to queue for exist token: ${tokenContract.name} - ${tokenAddress}`,
+      );
       return;
     }
     //detect token type
@@ -180,7 +182,9 @@ export default class FilterEventWorker {
       isNewToken: true,
     });
     await this._publisher.pushMessage(messageToQueue);
-    logger.info(`push message to queue for new token: ${tokenAddress}`);
+    logger.info(
+      `push message to queue for new token: ${tokenContract.name} - ${tokenAddress}`,
+    );
     return;
   }
 

@@ -27,12 +27,12 @@ export default class Publisher {
       //   console.error("[AMQP] reconnecting");
       //   return setTimeout(async () => await this.pushMessage(message), 1000);
       // });
-      const channel = await connection.createChannel();
+      const channel = await connection.createConfirmChannel();
       const queue = await channel.assertQueue(this._queueName, {
         durable: false,
-      })
+      });
       await channel.sendToQueue(this._queueName, Buffer.from(message));
-      return queue
+      return queue;
     } catch (err) {
       logger.error('[AMQP]', err.message);
       return null;

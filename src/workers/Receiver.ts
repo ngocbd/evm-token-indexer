@@ -16,7 +16,7 @@ export default class Receiver {
       connection = await amqp.connect(process.env.RABBITMQ_URL);
       Receiver._rabbitMQConnection = connection;
     }
-    const channel = await connection.createChannel();
+    const channel = await connection.createConfirmChannel();
     await channel.assertQueue(this._queueName, {
       durable: false,
     });
@@ -24,16 +24,12 @@ export default class Receiver {
       ' [*] Waiting for messages in %s. To exit press CTRL+C',
       this._queueName,
     );
-    channel.consume(
-      this._queueName,
-      (msg) => {
-        const msqContent = msg.content.toString();
-        //remove message from queue only when messageHandler is done
-        messageHandler(msqContent).then(() => {
-          console.log(' [x] Done');
-          channel.ack(msg);
-        });
-      }
-    );
+    channel.consume(this._queueName, (msg) => {
+      const msqContent = msg.content.toString();
+      //remove message from queue only when messageHandler is done
+      messageHandler(msqContent).then(() => {
+        channel.ack(msg);
+      });
+    });
   }
 }

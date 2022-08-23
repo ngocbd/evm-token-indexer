@@ -209,6 +209,7 @@ export const LIST_AVAILABLE_WORKERS = {
   FilterEventWorker: 'FilterEvent',
   PublisherWorker: 'Publisher',
   ReceiverWorker: 'Receiver',
+  ClearDatabase: 'ClearData',
 };
 
 export const EVENT_TRANSFER_QUEUE_NAME = 'evm-indexer-event-transfer';

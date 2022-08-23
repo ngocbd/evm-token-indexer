@@ -3,8 +3,8 @@ import {
   LIST_AVAILABLE_WORKERS,
   RABBITMQ_QUEUE_NAME,
 } from './constants';
-import {ethers} from 'ethers';
-import {AppDataSource} from './data-source';
+import { ethers } from 'ethers';
+import { AppDataSource } from './data-source';
 //typeorm migration
 import 'reflect-metadata';
 import {
@@ -15,11 +15,15 @@ import {
 } from './workers';
 import Receiver from './workers/Receiver';
 import logger from './logger';
-import {sleep} from "./utils";
+import { sleep } from './utils';
+import { TokenContractService } from './services';
 
 const main = async () => {
   const appCommandLineArgs = process.argv.slice(2);
   const provider = new ethers.providers.JsonRpcProvider(ETH_MAIN_NET_RPC_URL);
+  const tokenService = new TokenContractService();
+  const block = await tokenService.getLatestBlockInDb();
+  console.log(block);
   if (appCommandLineArgs.length > 0) {
     const workerName = appCommandLineArgs[0];
     switch (workerName) {
@@ -32,12 +36,14 @@ const main = async () => {
       case LIST_AVAILABLE_WORKERS.PushEventWorker:
         const pushEventWorker = new PushEventWorker(provider);
 
-        await pushEventWorker.run(15_358_215, 15_358_216);
+        await pushEventWorker.run();
         break;
       case LIST_AVAILABLE_WORKERS.ReceiverWorker:
         await new Receiver(RABBITMQ_QUEUE_NAME).consumeMessage(async (msg) => {
-          console.log('sleep 1s');
-          await sleep(1000);
+          if (msg === 'Hello 1') {
+            console.log('receive hello 1 and sleep');
+            await sleep(1000);
+          }
           console.log(msg);
         });
         break;
@@ -46,6 +52,10 @@ const main = async () => {
         for (let i = 0; i < 10; i++) {
           await publisherWorker.pushMessage(`Hello ${i}`);
         }
+        break;
+      case LIST_AVAILABLE_WORKERS.ClearDatabase:
+        await new SaveDataWorker(provider).clearAllData();
+        console.log('Clear all records in database');
         break;
       case 'list-workers':
         console.log('Available workers: ');
