@@ -1,8 +1,8 @@
-import {Repository} from 'typeorm';
-import {TransferEvent} from '../entity';
-import {AppDataSource} from '../data-source';
-import {DATABASE_SCHEMA} from "../constants";
-import logger from "../logger";
+import { Repository } from 'typeorm';
+import { TransferEvent } from '../entity';
+import { AppDataSource } from '../data-source';
+import { DATABASE_SCHEMA } from '../constants';
+import logger from '../logger';
 
 export default class TransferEventService {
   private readonly transferEventRepository: Repository<TransferEvent>;
@@ -10,7 +10,7 @@ export default class TransferEventService {
 
   constructor() {
     this.transferEventRepository = AppDataSource.getRepository(TransferEvent);
-    this._tableName = "transfer_events"
+    this._tableName = 'transfer_events';
   }
 
   async save(transferEvent: TransferEvent): Promise<TransferEvent> {

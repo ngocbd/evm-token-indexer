@@ -72,7 +72,7 @@ export default class SaveDataWorker {
       toSaveTransaction.to = transaction.to;
       toSaveTransaction.value = transaction.value.toString();
       toSaveTransaction.data = transaction.data;
-      toSaveTransaction.from = transaction.from
+      toSaveTransaction.from = transaction.from;
       const signature =
         transaction.r.slice(2) +
         transaction.s.slice(2) +

@@ -1,9 +1,9 @@
-import {ethers, utils} from 'ethers';
-import {Publisher} from './index';
-import {EVENT_TRANSFER_QUEUE_NAME} from '../constants';
+import { ethers, utils } from 'ethers';
+import { Publisher } from './index';
+import { EVENT_TRANSFER_QUEUE_NAME } from '../constants';
 import logger from '../logger';
-import {TokenContractService, TransferEventService} from '../services';
-import RedisService from "../services/RedisService";
+import { TokenContractService, TransferEventService } from '../services';
+import RedisService from '../services/RedisService';
 
 export default class PushEventWorker {
   _provider: ethers.providers.JsonRpcProvider;
@@ -11,8 +11,8 @@ export default class PushEventWorker {
   _tokenContractService: TokenContractService;
   _transferEventService: TransferEventService;
   _firstRecognizedTokenBlock: number;
-  _redisService: RedisService
-  _lastReadBlockRedisKey: string
+  _redisService: RedisService;
+  _lastReadBlockRedisKey: string;
 
   constructor(provider: ethers.providers.JsonRpcProvider) {
     this._provider = provider;
@@ -20,27 +20,30 @@ export default class PushEventWorker {
     this._tokenContractService = new TokenContractService();
     this._firstRecognizedTokenBlock = 980_743;
     this._redisService = new RedisService();
-    this._transferEventService = new TransferEventService()
-    this._lastReadBlockRedisKey = 'evm-push-event-worker-last-read-block'
+    this._transferEventService = new TransferEventService();
+    this._lastReadBlockRedisKey = 'evm-push-event-worker-last-read-block';
   }
 
   /*
-* Detect start block
-* if cached exist use cached block number
-* else if latest block in db > first recognized block use block in db
-* else use first recognized block
-* */
+   * Detect start block
+   * if cached exist use cached block number
+   * else if latest block in db > first recognized block use block in db
+   * else use first recognized block
+   * */
   private async _detectStartBlock(): Promise<number> {
-    const cachedBlock = await this._redisService.getValue(this._lastReadBlockRedisKey);
+    const cachedBlock = await this._redisService.getValue(
+      this._lastReadBlockRedisKey,
+    );
     if (cachedBlock !== null) {
-      return parseInt(cachedBlock)
+      return parseInt(cachedBlock);
     }
     const inDbBlock = await this._transferEventService.getHighestBlock();
-    return inDbBlock > this._firstRecognizedTokenBlock ? inDbBlock : this._firstRecognizedTokenBlock
+    return inDbBlock > this._firstRecognizedTokenBlock
+      ? inDbBlock
+      : this._firstRecognizedTokenBlock;
   }
 
   async getTransferEvents() {
-
     const blockLength = 1000;
     try {
       await this._redisService.init();
@@ -54,7 +57,7 @@ export default class PushEventWorker {
         'TransferBatch(address,address,address,uint256[],uint256[])',
       );
       const currentChainBlockNumber = await this._provider.getBlockNumber();
-      const startBlock = await this._detectStartBlock()
+      const startBlock = await this._detectStartBlock();
       if (currentChainBlockNumber <= startBlock) {
         logger.info('Has Sync To current block');
         return;
@@ -107,7 +110,10 @@ export default class PushEventWorker {
           );
           transferEventsMap.clear();
           //update cached
-          await this._redisService.setValue(this._lastReadBlockRedisKey, toBlock)
+          await this._redisService.setValue(
+            this._lastReadBlockRedisKey,
+            toBlock,
+          );
         }
       }
 
@@ -127,6 +133,4 @@ export default class PushEventWorker {
   async run() {
     await this.getTransferEvents();
   }
-
-
 }

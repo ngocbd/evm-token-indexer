@@ -7,7 +7,7 @@ export default class Transaction {
   @Column('bigint')
   block_number: bigint;
   @Column({
-    name: 'gas_price'
+    name: 'gas_price',
   })
   gasPrice: string;
   @Column('bigint')
