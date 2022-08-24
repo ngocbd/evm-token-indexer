@@ -6,7 +6,9 @@ export default class Transaction {
   tx_hash: string;
   @Column('bigint')
   block_number: bigint;
-  @Column()
+  @Column({
+    name: 'gas_price'
+  })
   gasPrice: string;
   @Column('bigint')
   nonce: bigint;

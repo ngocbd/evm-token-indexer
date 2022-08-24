@@ -24,15 +24,15 @@
    },
    "homepage": "https://github.com/4bytes-io/evm-token-indexer#readme",
    "devDependencies": {
+      "@types/node": "^16.11.10",
       "@typescript-eslint/eslint-plugin": "^5.33.0",
       "@typescript-eslint/parser": "^5.33.0",
       "eslint": "^8.21.0",
-      "nodemon": "^2.0.19",
-      "ts-node": "10.7.0",
-      "typescript": "4.5.2",
       "eslint-config-prettier": "^8.3.0",
       "eslint-plugin-prettier": "^4.0.0",
-      "@types/node": "^16.11.10"
+      "nodemon": "^2.0.19",
+      "ts-node": "10.7.0",
+      "typescript": "4.5.2"
    },
    "dependencies": {
       "amqplib": "^0.10.2",
@@ -40,6 +40,7 @@
       "ethers": "^5.6.9",
       "pg": "^8.4.0",
       "prettier": "^2.7.1",
+      "redis": "^4.3.0",
       "reflect-metadata": "^0.1.13",
       "typeorm": "0.3.7",
       "winston": "^3.8.1"
