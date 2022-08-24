@@ -1,8 +1,9 @@
 # EVM TOKEN INDEXER
 
-node, typescript, ethers, typeorm, postgresql
+node, typescript, ethers, typeorm, postgresql, redis cache
 
 - Provide proper `.env` file in root directory, an example can be found in `.env.example`.
+- set `PRODUCTION` key in `.env` to `1` for using production mode (connect to remote redis, remote posgressql, remote rabbitmq,..)
 
 # Available scripts
 

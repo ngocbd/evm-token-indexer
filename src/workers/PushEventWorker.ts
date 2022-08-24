@@ -1,6 +1,6 @@
 import { ethers, utils } from 'ethers';
 import { Publisher } from './index';
-import { EVENT_TRANSFER_QUEUE_NAME } from '../constants';
+import { EVENT_TRANSFER_QUEUE_NAME, lastReadBlockRedisKey } from '../constants';
 import logger from '../logger';
 import { TokenContractService, TransferEventService } from '../services';
 import RedisService from '../services/RedisService';
@@ -12,7 +12,6 @@ export default class PushEventWorker {
   _transferEventService: TransferEventService;
   _firstRecognizedTokenBlock: number;
   _redisService: RedisService;
-  _lastReadBlockRedisKey: string;
 
   constructor(provider: ethers.providers.JsonRpcProvider) {
     this._provider = provider;
@@ -21,9 +20,8 @@ export default class PushEventWorker {
     this._firstRecognizedTokenBlock = 980_743;
     this._redisService = new RedisService();
     this._transferEventService = new TransferEventService();
-    this._lastReadBlockRedisKey = 'evm-push-event-worker-last-read-block';
   }
-
+  //1_232_743
   /*
    * Detect start block
    * if cached exist use cached block number
@@ -32,9 +30,12 @@ export default class PushEventWorker {
    * */
   private async _detectStartBlock(): Promise<number> {
     const cachedBlock = await this._redisService.getValue(
-      this._lastReadBlockRedisKey,
+      lastReadBlockRedisKey,
     );
-    if (cachedBlock !== null) {
+    if (
+      cachedBlock !== null &&
+      parseInt(cachedBlock) > this._firstRecognizedTokenBlock
+    ) {
       return parseInt(cachedBlock);
     }
     const inDbBlock = await this._transferEventService.getHighestBlock();
@@ -43,7 +44,7 @@ export default class PushEventWorker {
       : this._firstRecognizedTokenBlock;
   }
 
-  async getTransferEvents() {
+  async pushEventTransfer() {
     const blockLength = 1000;
     try {
       await this._redisService.init();
@@ -110,10 +111,7 @@ export default class PushEventWorker {
           );
           transferEventsMap.clear();
           //update cached
-          await this._redisService.setValue(
-            this._lastReadBlockRedisKey,
-            toBlock,
-          );
+          await this._redisService.setValue(lastReadBlockRedisKey, toBlock);
         }
       }
 
@@ -123,14 +121,7 @@ export default class PushEventWorker {
     }
   }
 
-  async pushEventTransfer(message: string) {
-    await this._publisher.pushMessage(message);
-    // logger.info(
-    //   `Push ${events.length} events of token ${events[0].address} to queue`,
-    // );
-  }
-
   async run() {
-    await this.getTransferEvents();
+    await this.pushEventTransfer();
   }
 }

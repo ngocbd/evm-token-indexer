@@ -52,7 +52,7 @@ const main = async () => {
         break;
       case LIST_AVAILABLE_WORKERS.ClearDatabase:
         await new SaveDataWorker(provider).clearAllData();
-        console.log('Clear all records in database');
+        console.log('Clear all records in database and reset cached blocks');
         break;
       case 'list-workers':
         console.log('Available workers: ');

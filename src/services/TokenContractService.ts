@@ -14,7 +14,21 @@ export default class TokenContractService {
   }
 
   async save(tokenContract: TokenContract): Promise<TokenContract> {
-    return await this.tokenContractRepository.save(tokenContract);
+    try {
+      const exist = await this.tokenContractRepository.findOne({
+        where: {
+          address: tokenContract.address,
+        },
+      });
+      if (exist) {
+        console.log('exist');
+        throw new Error(`the token ${tokenContract.address} existed`);
+      }
+      return await this.tokenContractRepository.save(tokenContract);
+    } catch (err: any) {
+      logger.error('[Token service] saved token failed: ' + err.message);
+      return null;
+    }
   }
 
   async findAll(): Promise<TokenContract[]> {

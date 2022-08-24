@@ -4,11 +4,12 @@ import {
   TransactionService,
   TransferEventService,
 } from '../services';
-import { SAVE_DATA_QUEUE_NAME } from '../constants';
+import { lastReadBlockRedisKey, SAVE_DATA_QUEUE_NAME } from '../constants';
 import { TokenContract, Transaction, TransferEvent } from '../entity';
 import { deletePadZero, sleep } from '../utils';
 import { BigNumber, ethers } from 'ethers';
 import logger from '../logger';
+import RedisService from '../services/RedisService';
 
 export default class SaveDataWorker {
   _receiver: Receiver;
@@ -16,6 +17,7 @@ export default class SaveDataWorker {
   _transferEventService: TransferEventService;
   _transactionService: TransactionService;
   _provider: ethers.providers.JsonRpcProvider;
+  _redisService: RedisService;
 
   constructor(provider: ethers.providers.JsonRpcProvider) {
     this._receiver = new Receiver(SAVE_DATA_QUEUE_NAME);
@@ -23,6 +25,7 @@ export default class SaveDataWorker {
     this._transferEventService = new TransferEventService();
     this._transactionService = new TransactionService();
     this._provider = provider;
+    this._redisService = new RedisService();
   }
 
   async saveTransferEvent(
@@ -110,14 +113,16 @@ export default class SaveDataWorker {
   async saveData(message: string) {
     try {
       const data: {
-        transferEvents: any;
+        transferEvents: any[];
         tokenContract: TokenContract;
         isNewToken: boolean;
       } = JSON.parse(message);
       //save token contract only when it's new
       if (data.isNewToken) {
-        await this._tokenContractService.save(data.tokenContract);
-        logger.info(`Saved token contract ${data.tokenContract.address}`);
+        const res = await this._tokenContractService.save(data.tokenContract);
+        if (res) {
+          logger.info(`Saved token contract ${data.tokenContract.address}`);
+        }
       }
 
       let toSaveTxnHash = '';
@@ -161,6 +166,8 @@ export default class SaveDataWorker {
     await this._tokenContractService.deleteAll();
     await this._transferEventService.deleteAll();
     await this._transactionService.deleteAll();
+    await this._redisService.init();
+    await this._redisService.setValue(lastReadBlockRedisKey, 0);
   }
 
   async run() {

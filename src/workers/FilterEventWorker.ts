@@ -145,6 +145,14 @@ export default class FilterEventWorker {
     let tokenContract = await this._tokenContractService.findByAddress(
       tokenAddress,
     );
+    if (tokenContract && tokenContract.validated < 0) {
+      console.log(
+        'Detected existed invalid token '
+          .concat(tokenAddress)
+          .concat(' skip...'),
+      );
+      return;
+    }
     if (tokenContract) {
       //push to queue
       const messageToQueue = JSON.stringify({
@@ -154,7 +162,7 @@ export default class FilterEventWorker {
       });
       await this._publisher.pushMessage(messageToQueue);
       logger.info(
-        `push message to queue for exist token: ${tokenContract.name} - ${tokenAddress}`,
+        `push message to queue for exist valid token: ${tokenContract.name} - ${tokenAddress}`,
       );
       return;
     }
@@ -164,7 +172,18 @@ export default class FilterEventWorker {
     tokenContract.type = tokenType;
     tokenContract.address = tokenAddress;
     if (tokenType === TokenType.UNKNOWN) {
-      logger.info('unknown token type for token: ', tokenAddress, ' skip...');
+      //push token with validated status = -1; and empty transferEvents
+      tokenContract.validated = -1;
+      tokenContract.block_number = firstTransferEvent.blockNumber;
+      const messageToQueue = JSON.stringify({
+        tokenContract,
+        transferEvents: [],
+        isNewToken: true,
+      });
+      await this._publisher.pushMessage(messageToQueue);
+      logger.info(
+        `push message to queue for invalid token: ${tokenAddress} and skip all transfers events...`,
+      );
       return;
     }
     //get the token meta data for erc20 token
@@ -172,7 +191,7 @@ export default class FilterEventWorker {
     tokenContract.name = metaData.name;
     tokenContract.symbol = metaData.symbol;
     tokenContract.decimal = metaData.decimals;
-
+    tokenContract.validated = 1;
     //save block number that this token is detected
     tokenContract.block_number = firstTransferEvent.blockNumber;
     //push to queue

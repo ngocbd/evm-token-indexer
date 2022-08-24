@@ -37,6 +37,10 @@ export default class TokenContract {
   //first block that we detect this token
   @Column({
     nullable: true,
+    type: 'bigint',
   })
-  block_number: string;
+  block_number: bigint;
+
+  @Column()
+  validated: number;
 }
