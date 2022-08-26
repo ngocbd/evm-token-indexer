@@ -45,7 +45,7 @@ export default class PushEventWorker {
   }
 
   async pushEventTransfer() {
-    const blockLength = 1000;
+    const blockLength = 100;
     try {
       await this._redisService.init();
       const erc20TransferMethodTopic = utils.id(
@@ -58,6 +58,7 @@ export default class PushEventWorker {
         'TransferBatch(address,address,address,uint256[],uint256[])',
       );
       const currentChainBlockNumber = await this._provider.getBlockNumber();
+      console.log('block height: ', currentChainBlockNumber)
       const startBlock = await this._detectStartBlock();
       if (currentChainBlockNumber <= startBlock) {
         logger.info('Has Sync To current block');
