@@ -1,0 +1,37 @@
+version: "3.8"
+
+services:
+  push_event:
+    build: .
+    container_name: push_event_worker
+    image: token-indexer
+    volumes:
+      - /app/node_modules
+      - push_event_worker_log:/app/logs
+    command: PushEvent
+
+  filter_event:
+    build: .
+    container_name: filter_event_worker
+    image: token-indexer
+    volumes:
+      - /app/node_modules
+      - filter_event_worker_log:/app/logs
+    command: FilterEvent
+
+  save_data:
+    build: .
+    container_name: save_data_worker
+    image: token-indexer
+    volumes:
+      - /app/node_modules
+      - save_data_worker_log:/app/logs
+    command: SaveData
+
+volumes:
+  push_event_worker_log:
+    name: push_event_worker_log
+  filter_event_worker_log:
+    name: filter_event_worker_log
+  save_data_worker_log:
+    name: save_data_worker_log
