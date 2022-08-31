@@ -1,21 +1,40 @@
-import { Column, Entity, PrimaryColumn } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import TokenType from '../enums/TokenType';
 
 @Entity('transfer_events')
 export default class TransferEvent {
-  @PrimaryColumn()
+  @PrimaryGeneratedColumn('increment', {
+    type: 'bigint',
+  })
+  id: bigint;
+
+  @Column()
   log_index: number;
-  @PrimaryColumn()
+  @Column()
   tx_hash: string;
+
   @Column('bigint')
   block_number: bigint;
+
   @Column()
   address: string;
+
   @Column()
   from: string;
+
   @Column()
   to: string;
-  @Column()
+
+  @Column({
+    nullable: true,
+  })
   token_id: string;
+
   @Column()
   amount: string;
+
+  @Column({
+    default: TokenType.UNKNOWN,
+  })
+  tokenType: TokenType;
 }

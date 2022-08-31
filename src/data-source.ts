@@ -29,4 +29,5 @@ export const AppDataSource = new DataSource({
   migrations: [],
   subscribers: [],
   schema: DATABASE_SCHEMA,
+  uuidExtension: 'pgcrypto',
 });

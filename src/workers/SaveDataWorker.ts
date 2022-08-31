@@ -7,9 +7,10 @@ import {
 import { lastReadBlockRedisKey, SAVE_DATA_QUEUE_NAME } from '../constants';
 import { TokenContract, Transaction, TransferEvent } from '../entity';
 import { deletePadZero, sleep } from '../utils';
-import { BigNumber, ethers } from 'ethers';
+import { BigNumber, ethers, utils } from 'ethers';
 import logger from '../logger';
 import RedisService from '../services/RedisService';
+import TokenType from '../enums/TokenType';
 
 export default class SaveDataWorker {
   _receiver: Receiver;
@@ -30,28 +31,80 @@ export default class SaveDataWorker {
 
   async saveTransferEvent(
     transferEvent: ethers.providers.Log,
-    tokenAddress: string,
+    token: TokenContract,
   ): Promise<TransferEvent | null> {
     try {
-      //fallback value when failed to get data
       const toSaveTransferEvent = new TransferEvent();
       toSaveTransferEvent.log_index = transferEvent.logIndex;
       toSaveTransferEvent.tx_hash = transferEvent.transactionHash;
       toSaveTransferEvent.block_number = BigInt(transferEvent.blockNumber);
       toSaveTransferEvent.address = transferEvent.address;
-      toSaveTransferEvent.from = deletePadZero(transferEvent.topics[1]);
-      toSaveTransferEvent.to = deletePadZero(transferEvent.topics[2]);
-      toSaveTransferEvent.token_id = tokenAddress;
-      let amount = '';
-      try {
-        amount = BigNumber.from(transferEvent.data).toString();
-      } catch (convertError) {
-        //this happen when non erc20 token is transferred
-        amount = transferEvent.data;
+
+      switch (token.type) {
+        case TokenType.ERC20:
+          toSaveTransferEvent.tokenType = TokenType.ERC20;
+          toSaveTransferEvent.from = deletePadZero(transferEvent.topics[1]);
+          toSaveTransferEvent.to = deletePadZero(transferEvent.topics[2]);
+          toSaveTransferEvent.amount = BigNumber.from(
+            transferEvent.data,
+          ).toString();
+          toSaveTransferEvent.token_id = null;
+          return await this._transferEventService.save(toSaveTransferEvent);
+        case TokenType.ERC721:
+          toSaveTransferEvent.tokenType = TokenType.ERC721;
+          toSaveTransferEvent.from = deletePadZero(transferEvent.topics[1]);
+          toSaveTransferEvent.to = deletePadZero(transferEvent.topics[2]);
+          toSaveTransferEvent.amount = '1';
+          const tokenId = BigNumber.from(
+            '0x00000000000000000000000000000000000000000000000000000000000002e8',
+          ).toString();
+          toSaveTransferEvent.token_id = tokenId;
+          return await this._transferEventService.save(toSaveTransferEvent);
+        case TokenType.ERC1155:
+          toSaveTransferEvent.tokenType = TokenType.ERC1155;
+          toSaveTransferEvent.from = deletePadZero(transferEvent.topics[2]);
+          toSaveTransferEvent.to = deletePadZero(transferEvent.topics[3]);
+          const erc1155TransferSingleTopic = utils.id(
+            'TransferSingle(address,address,address,uint256,uint256)',
+          );
+          const erc1155TransferBatchTopic = utils.id(
+            'TransferBatch(address,address,address,uint256[],uint256[])',
+          );
+          const isTransferBatch =
+            transferEvent.topics[0] === erc1155TransferBatchTopic;
+          if (isTransferBatch) {
+            const [ids, amounts] = utils.defaultAbiCoder.decode(
+              ['uint256[]', 'uint256[]'],
+              transferEvent.data,
+            );
+            const idsNumber = ids.map((id) => id.toString());
+            const amountsNumber = amounts.map((amount) => amount.toString());
+            let res = null;
+            for (let i = 0; i < idsNumber.length; i++) {
+              const id = idsNumber[i];
+              const amount = amountsNumber[i];
+              const toSaveCopy = { ...toSaveTransferEvent };
+              toSaveCopy.token_id = id;
+              toSaveCopy.amount = amount;
+              res = await this._transferEventService.save(toSaveCopy);
+            }
+            return res;
+          } else {
+            const [tokenId, amount] = utils.defaultAbiCoder.decode(
+              ['uint256', 'uint256'],
+              transferEvent.data,
+            );
+            toSaveTransferEvent.token_id = tokenId.toString();
+            toSaveTransferEvent.amount = amount.toString();
+            return await this._transferEventService.save(toSaveTransferEvent);
+          }
+        case TokenType.UNKNOWN:
+          toSaveTransferEvent.tokenType = TokenType.UNKNOWN;
+          return null;
       }
-      toSaveTransferEvent.amount = amount;
-      const res = await this._transferEventService.save(toSaveTransferEvent);
-      return res;
+
+      // const res = await this._transferEventService.save(toSaveTransferEvent);
+      // return res
     } catch (err: any) {
       logger.error(
         `Save transfer event failed for ${transferEvent.transactionHash} msg: ${err.message}`,
@@ -131,7 +184,7 @@ export default class SaveDataWorker {
           try {
             const savedTransferEvent = await this.saveTransferEvent(
               transferEvent,
-              data.tokenContract.address,
+              data.tokenContract,
             );
             const currentEventTxnHash = transferEvent.transactionHash;
 

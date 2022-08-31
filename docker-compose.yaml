@@ -6,7 +6,6 @@ services:
     container_name: push_event_worker
     image: token-indexer
     volumes:
-      - /app/node_modules
       - push_event_worker_log:/app/logs
     command: PushEvent
 
@@ -15,7 +14,6 @@ services:
     container_name: filter_event_worker
     image: token-indexer
     volumes:
-      - /app/node_modules
       - filter_event_worker_log:/app/logs
     command: FilterEvent
 
@@ -24,10 +22,9 @@ services:
     container_name: save_data_worker
     image: token-indexer
     volumes:
-      - /app/node_modules
       - save_data_worker_log:/app/logs
     command: SaveData
-
+#Volume mounting for saving logs files
 volumes:
   push_event_worker_log:
     name: push_event_worker_log

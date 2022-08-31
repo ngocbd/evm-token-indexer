@@ -4,7 +4,7 @@ import { EVENT_TRANSFER_QUEUE_NAME, lastReadBlockRedisKey } from '../constants';
 import logger from '../logger';
 import { TokenContractService, TransferEventService } from '../services';
 import RedisService from '../services/RedisService';
-import {sleep} from "../utils";
+import { sleep } from '../utils';
 
 export default class PushEventWorker {
   _provider: ethers.providers.JsonRpcProvider;
@@ -60,7 +60,7 @@ export default class PushEventWorker {
         'TransferBatch(address,address,address,uint256[],uint256[])',
       );
       const currentChainBlockNumber = await this._provider.getBlockNumber();
-      console.log('block height: ', currentChainBlockNumber)
+      console.log('block height: ', currentChainBlockNumber);
       const startBlock = await this._detectStartBlock();
       if (currentChainBlockNumber <= startBlock) {
         logger.info('Has Sync To current block');
@@ -116,7 +116,7 @@ export default class PushEventWorker {
           //update cached
           await this._redisService.setValue(lastReadBlockRedisKey, toBlock);
         }
-        sleep(sleepTime);
+        // sleep(sleepTime);
       }
 
       //
