@@ -3,7 +3,7 @@ import {
   LIST_AVAILABLE_WORKERS,
   RABBITMQ_QUEUE_NAME,
 } from './constants';
-import {  ethers } from 'ethers';
+import { ethers } from 'ethers';
 import { AppDataSource } from './data-source';
 //typeorm migration
 import 'reflect-metadata';
@@ -19,7 +19,9 @@ import { sleep } from './utils';
 
 const main = async () => {
   const appCommandLineArgs = process.argv.slice(2);
-  const provider = new ethers.providers.JsonRpcProvider(CLOUD_FLARE_GATEWAY_ETH_RPC_URL);
+  const provider = new ethers.providers.JsonRpcProvider(
+    CLOUD_FLARE_GATEWAY_ETH_RPC_URL,
+  );
 
   if (appCommandLineArgs.length > 0) {
     const workerName = appCommandLineArgs[0];

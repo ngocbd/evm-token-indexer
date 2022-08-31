@@ -1,5 +1,6 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 import TokenType from '../enums/TokenType';
+import tokenType from '../enums/TokenType';
 
 @Entity('transfer_events')
 export default class TransferEvent {
@@ -35,6 +36,7 @@ export default class TransferEvent {
 
   @Column({
     default: TokenType.UNKNOWN,
+    name: 'token_type',
   })
-  tokenType: TokenType;
+  tokenType: tokenType;
 }

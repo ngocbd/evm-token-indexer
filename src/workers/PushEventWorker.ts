@@ -4,7 +4,6 @@ import { EVENT_TRANSFER_QUEUE_NAME, lastReadBlockRedisKey } from '../constants';
 import logger from '../logger';
 import { TokenContractService, TransferEventService } from '../services';
 import RedisService from '../services/RedisService';
-import { sleep } from '../utils';
 
 export default class PushEventWorker {
   _provider: ethers.providers.JsonRpcProvider;
@@ -47,7 +46,7 @@ export default class PushEventWorker {
 
   async pushEventTransfer() {
     const blockLength = 100;
-    const sleepTime = 100;
+
     try {
       await this._redisService.init();
       const erc20TransferMethodTopic = utils.id(
@@ -112,14 +111,11 @@ export default class PushEventWorker {
           logger.info(
             `Push ${events.length} events of token ${events[0].address} to queue`,
           );
-          transferEventsMap.clear();
           //update cached
           await this._redisService.setValue(lastReadBlockRedisKey, toBlock);
         }
-        // sleep(sleepTime);
+        transferEventsMap.clear();
       }
-
-      //
     } catch (err: any) {
       logger.error('Push event error: ' + err);
     }

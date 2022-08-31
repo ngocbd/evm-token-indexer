@@ -64,9 +64,7 @@ export default class SaveDataWorker {
           toSaveTransferEvent.tokenType = TokenType.ERC1155;
           toSaveTransferEvent.from = deletePadZero(transferEvent.topics[2]);
           toSaveTransferEvent.to = deletePadZero(transferEvent.topics[3]);
-          const erc1155TransferSingleTopic = utils.id(
-            'TransferSingle(address,address,address,uint256,uint256)',
-          );
+
           const erc1155TransferBatchTopic = utils.id(
             'TransferBatch(address,address,address,uint256[],uint256[])',
           );

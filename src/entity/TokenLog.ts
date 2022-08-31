@@ -20,7 +20,6 @@ export default class TokenLog {
   @Column()
   address: string;
 
-
   @Column()
   removed: boolean;
 

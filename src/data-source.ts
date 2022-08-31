@@ -1,11 +1,11 @@
 import 'reflect-metadata';
-import {DataSource} from 'typeorm';
+import { DataSource } from 'typeorm';
 import {
   TokenBalance,
   TokenContract,
   Transaction,
   TransferEvent,
-  TokenLog
+  TokenLog,
 } from './entity';
 import 'dotenv/config';
 import {
