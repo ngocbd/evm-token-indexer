@@ -1,10 +1,11 @@
 import 'reflect-metadata';
-import { DataSource } from 'typeorm';
+import {DataSource} from 'typeorm';
 import {
   TokenBalance,
   TokenContract,
   Transaction,
   TransferEvent,
+  TokenLog
 } from './entity';
 import 'dotenv/config';
 import {
@@ -25,7 +26,7 @@ export const AppDataSource = new DataSource({
   database: DATABASE_NAME,
   synchronize: true,
   logging: false,
-  entities: [TokenContract, Transaction, TransferEvent, TokenBalance],
+  entities: [TokenContract, Transaction, TransferEvent, TokenBalance, TokenLog],
   migrations: [],
   subscribers: [],
   schema: DATABASE_SCHEMA,

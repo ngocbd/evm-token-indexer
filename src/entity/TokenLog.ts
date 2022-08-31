@@ -8,6 +8,9 @@ export default class TokenLog {
   @PrimaryColumn()
   tx_hash: string;
 
+  @Column()
+  tx_index: number;
+
   @Column('bigint')
   block_number: bigint;
 
@@ -17,14 +20,6 @@ export default class TokenLog {
   @Column()
   address: string;
 
-  @Column()
-  token_id: string;
-
-  @Column()
-  transaction_index: number;
-
-  @Column('text')
-  transaction_hash: string;
 
   @Column()
   removed: boolean;

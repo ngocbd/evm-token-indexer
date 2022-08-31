@@ -1,4 +1,5 @@
 import {
+  CLOUD_FLARE_GATEWAY_ETH_RPC_URL,
   LIST_AVAILABLE_WORKERS,
   RABBITMQ_QUEUE_NAME,
 } from './constants';
@@ -16,11 +17,10 @@ import Receiver from './workers/Receiver';
 import logger from './logger';
 import { sleep } from './utils';
 
-
 const main = async () => {
   const appCommandLineArgs = process.argv.slice(2);
+  const provider = new ethers.providers.JsonRpcProvider(CLOUD_FLARE_GATEWAY_ETH_RPC_URL);
 
-  const provider = new ethers.providers.JsonRpcProvider(ropston);
   if (appCommandLineArgs.length > 0) {
     const workerName = appCommandLineArgs[0];
     switch (workerName) {
