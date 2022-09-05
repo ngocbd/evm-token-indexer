@@ -4,6 +4,7 @@ import 'dotenv/config';
 export default class Receiver {
   private readonly _queueName: string;
   private static _rabbitMQConnection: amqp.Connection;
+  private static _rabbitMQChannel;
 
   constructor(queueName: string) {
     this._queueName = queueName;
@@ -16,7 +17,12 @@ export default class Receiver {
       connection = await amqp.connect(process.env.RABBITMQ_URL);
       Receiver._rabbitMQConnection = connection;
     }
-    const channel = await connection.createConfirmChannel();
+    let channel = Receiver._rabbitMQChannel;
+    if (!channel) {
+      console.log('[AMQP] create channel');
+      channel = await connection.createConfirmChannel();
+      Receiver._rabbitMQChannel = channel;
+    }
     await channel.assertQueue(this._queueName, {
       durable: false,
     });

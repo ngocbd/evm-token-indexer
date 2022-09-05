@@ -63,7 +63,7 @@ export default class FilterEventWorker {
       //retry
       if (maxRetries > 0) {
         logger.warn(
-          `detect token type failed for token: ${tokenAddress}: ${err} retrying...`,
+          `detect token type failed for token: ${tokenAddress}: ${err} ${maxRetries} retries left...`,
         );
         await sleep(retryTime);
         return this.detectTokenType(tokenAddress, maxRetries - 1);

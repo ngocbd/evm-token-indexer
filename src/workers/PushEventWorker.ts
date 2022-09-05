@@ -1,6 +1,10 @@
 import { ethers, utils } from 'ethers';
 import { Publisher } from './index';
-import { EVENT_TRANSFER_QUEUE_NAME, lastReadBlockRedisKey } from '../constants';
+import {
+  EVENT_TRANSFER_QUEUE_NAME,
+  lastReadBlockRedisKey,
+  SAVE_LOG_QUEUE_NAME,
+} from '../constants';
 import logger from '../logger';
 import { TokenContractService, TransferEventService } from '../services';
 import RedisService from '../services/RedisService';
@@ -8,6 +12,7 @@ import RedisService from '../services/RedisService';
 export default class PushEventWorker {
   _provider: ethers.providers.JsonRpcProvider;
   _publisher: Publisher;
+  _logPublisher: Publisher;
   _tokenContractService: TokenContractService;
   _transferEventService: TransferEventService;
   _firstRecognizedTokenBlock: number;
@@ -16,12 +21,12 @@ export default class PushEventWorker {
   constructor(provider: ethers.providers.JsonRpcProvider) {
     this._provider = provider;
     this._publisher = new Publisher(EVENT_TRANSFER_QUEUE_NAME);
+    this._publisher = new Publisher(SAVE_LOG_QUEUE_NAME);
     this._tokenContractService = new TokenContractService();
     this._firstRecognizedTokenBlock = 980_743;
     this._redisService = new RedisService();
     this._transferEventService = new TransferEventService();
   }
-  //1_232_743
   /*
    * Detect start block
    * if cached exist use cached block number
@@ -76,16 +81,23 @@ export default class PushEventWorker {
         let toBlock = fromBlock + blockLength;
         if (toBlock >= currentChainBlockNumber)
           toBlock = currentChainBlockNumber;
-        const logs = await this._provider.getLogs({
+        const transferEventLogs = await this._provider.getLogs({
           fromBlock,
           toBlock,
+          topics: [
+            [
+              erc20TransferMethodTopic,
+              erc1155TransferBatchTopic,
+              erc1155TransferSingleTopic,
+            ],
+          ],
         });
-        const transferEventLogs = logs.filter(
-          (item) =>
-            item.topics[0] === erc20TransferMethodTopic ||
-            item.topics[0] === erc1155TransferBatchTopic ||
-            item.topics[0] === erc1155TransferSingleTopic,
-        );
+        // const transferEventLogs = logs.filter(
+        //   (item) =>
+        //     item.topics[0] === erc20TransferMethodTopic ||
+        //     item.topics[0] === erc1155TransferBatchTopic ||
+        //     item.topics[0] === erc1155TransferSingleTopic,
+        // );
         console.log(
           `blocks ${fromBlock} => ${toBlock} transfer event count:  ${transferEventLogs.length}`,
         );

@@ -55,9 +55,7 @@ export default class SaveDataWorker {
           toSaveTransferEvent.from = deletePadZero(transferEvent.topics[1]);
           toSaveTransferEvent.to = deletePadZero(transferEvent.topics[2]);
           toSaveTransferEvent.amount = '1';
-          const tokenId = BigNumber.from(
-            '0x00000000000000000000000000000000000000000000000000000000000002e8',
-          ).toString();
+          const tokenId = BigNumber.from(transferEvent.topics[3]).toString();
           toSaveTransferEvent.token_id = tokenId;
           return await this._transferEventService.save(toSaveTransferEvent);
         case TokenType.ERC1155:

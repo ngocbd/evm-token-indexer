@@ -213,5 +213,6 @@ export const LIST_AVAILABLE_WORKERS = {
 };
 
 export const EVENT_TRANSFER_QUEUE_NAME = 'evm-indexer-event-transfer';
+export const SAVE_LOG_QUEUE_NAME = 'evm-indexer-save-log';
 export const SAVE_DATA_QUEUE_NAME = 'evm-indexer-save-data';
 export const lastReadBlockRedisKey = 'evm-push-event-worker-last-read-block';

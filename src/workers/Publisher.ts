@@ -5,9 +5,45 @@ import logger from '../logger';
 export default class Publisher {
   private readonly _queueName: string;
   private static _rabbitMQConnection: amqp.Connection;
+  private static _rabbitMQChannel;
 
   constructor(queueName: string) {
     this._queueName = queueName;
+  }
+
+  async getReceiverCount() {
+    try {
+      let connection = Publisher._rabbitMQConnection;
+      if (!connection) {
+        console.log('[AMQP] create connection');
+        connection = await amqp.connect(process.env.RABBITMQ_URL);
+        Publisher._rabbitMQConnection = connection;
+      }
+      connection.on('error', function (err) {
+        if (err.message !== 'Connection closing') {
+          console.error('[AMQP] conn error', err.message);
+        }
+      });
+      // connection.on("close", () => {
+      //   console.error("[AMQP] reconnecting");
+      //   return setTimeout(async () => await this.pushMessage(message), 1000);
+      // });
+      let channel = Publisher._rabbitMQChannel;
+      if (!channel) {
+        console.log('[AMQP] create channel');
+        channel = await connection.createConfirmChannel();
+        Publisher._rabbitMQChannel = channel;
+      }
+      const queue = await channel.assertQueue(this._queueName, {
+        durable: false,
+      });
+      console.log(queue);
+      return queue.consumerCount;
+    } catch (err) {
+      logger.error('AMPQ error: ', err);
+      return 0;
+      // return setTimeout(this.setupRabbitMQ, 1000);
+    }
   }
 
   async pushMessage(message: string) {
@@ -27,7 +63,12 @@ export default class Publisher {
       //   console.error("[AMQP] reconnecting");
       //   return setTimeout(async () => await this.pushMessage(message), 1000);
       // });
-      const channel = await connection.createConfirmChannel();
+      let channel = Publisher._rabbitMQChannel;
+      if (!channel) {
+        console.log('[AMQP] create channel');
+        channel = await connection.createConfirmChannel();
+        Publisher._rabbitMQChannel = channel;
+      }
       const queue = await channel.assertQueue(this._queueName, {
         durable: false,
       });

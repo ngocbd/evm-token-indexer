@@ -1,7 +1,7 @@
 import {
   CLOUD_FLARE_GATEWAY_ETH_RPC_URL,
   LIST_AVAILABLE_WORKERS,
-  RABBITMQ_QUEUE_NAME,
+  SAVE_LOG_QUEUE_NAME,
 } from './constants';
 import { ethers } from 'ethers';
 import { AppDataSource } from './data-source';
@@ -38,7 +38,7 @@ const main = async () => {
         await pushEventWorker.run();
         break;
       case LIST_AVAILABLE_WORKERS.ReceiverWorker:
-        await new Receiver(RABBITMQ_QUEUE_NAME).consumeMessage(async (msg) => {
+        await new Receiver(SAVE_LOG_QUEUE_NAME).consumeMessage(async (msg) => {
           if (msg === 'Hello 1') {
             console.log('receive hello 1 and sleep');
             await sleep(1000);
@@ -47,9 +47,11 @@ const main = async () => {
         });
         break;
       case LIST_AVAILABLE_WORKERS.PublisherWorker:
-        const publisherWorker = new Publisher(RABBITMQ_QUEUE_NAME);
-        for (let i = 0; i < 10; i++) {
-          await publisherWorker.pushMessage(`Hello ${i}`);
+        const publisher = new Publisher(SAVE_LOG_QUEUE_NAME);
+        for (let i = 0; i < 100; i++) {
+          const res = await publisher.getReceiverCount();
+          console.log(res);
+          await sleep(2000);
         }
         break;
       case LIST_AVAILABLE_WORKERS.ClearDatabase:
@@ -70,9 +72,7 @@ const main = async () => {
 };
 
 AppDataSource.initialize()
-  .then(async () => {
-    await main();
-  })
+  .then(main)
   .catch((error) => {
     logger.error('init error: ' + error);
   });
