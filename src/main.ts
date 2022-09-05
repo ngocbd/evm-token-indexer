@@ -1,5 +1,6 @@
 import {
   CLOUD_FLARE_GATEWAY_ETH_RPC_URL,
+  ETH_MAIN_NET_RPC_URL,
   LIST_AVAILABLE_WORKERS,
   SAVE_LOG_QUEUE_NAME,
 } from './constants';
@@ -16,12 +17,11 @@ import {
 import Receiver from './workers/Receiver';
 import logger from './logger';
 import { sleep } from './utils';
+import SaveLogWorker from './workers/SaveLogWorker';
 
 const main = async () => {
   const appCommandLineArgs = process.argv.slice(2);
-  const provider = new ethers.providers.JsonRpcProvider(
-    CLOUD_FLARE_GATEWAY_ETH_RPC_URL,
-  );
+  const provider = new ethers.providers.JsonRpcProvider(ETH_MAIN_NET_RPC_URL);
 
   if (appCommandLineArgs.length > 0) {
     const workerName = appCommandLineArgs[0];
@@ -57,6 +57,9 @@ const main = async () => {
       case LIST_AVAILABLE_WORKERS.ClearDatabase:
         await new SaveDataWorker(provider).clearAllData();
         console.log('Clear all records in database and reset cached blocks');
+        break;
+      case LIST_AVAILABLE_WORKERS.SaveLogWorker:
+        await new SaveLogWorker(provider).run();
         break;
       case 'list-workers':
         console.log('Available workers: ');

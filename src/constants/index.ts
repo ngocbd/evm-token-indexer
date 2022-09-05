@@ -210,6 +210,7 @@ export const LIST_AVAILABLE_WORKERS = {
   PublisherWorker: 'Publisher',
   ReceiverWorker: 'Receiver',
   ClearDatabase: 'ClearData',
+  SaveLogWorker: 'SaveLog',
 };
 
 export const EVENT_TRANSFER_QUEUE_NAME = 'evm-indexer-event-transfer';

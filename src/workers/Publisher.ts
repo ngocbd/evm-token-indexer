@@ -37,7 +37,6 @@ export default class Publisher {
       const queue = await channel.assertQueue(this._queueName, {
         durable: false,
       });
-      console.log(queue);
       return queue.consumerCount;
     } catch (err) {
       logger.error('AMPQ error: ', err);

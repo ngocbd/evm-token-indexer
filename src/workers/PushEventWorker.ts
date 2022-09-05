@@ -21,12 +21,13 @@ export default class PushEventWorker {
   constructor(provider: ethers.providers.JsonRpcProvider) {
     this._provider = provider;
     this._publisher = new Publisher(EVENT_TRANSFER_QUEUE_NAME);
-    this._publisher = new Publisher(SAVE_LOG_QUEUE_NAME);
+    this._logPublisher = new Publisher(SAVE_LOG_QUEUE_NAME);
     this._tokenContractService = new TokenContractService();
     this._firstRecognizedTokenBlock = 980_743;
     this._redisService = new RedisService();
     this._transferEventService = new TransferEventService();
   }
+
   /*
    * Detect start block
    * if cached exist use cached block number
@@ -123,6 +124,18 @@ export default class PushEventWorker {
           logger.info(
             `Push ${events.length} events of token ${events[0].address} to queue`,
           );
+          //push to save log queue only when this queue has receivers
+          const logQueueReceiverCount =
+            await this._logPublisher.getReceiverCount();
+          if (logQueueReceiverCount > 0) {
+            const logQueueMsg = JSON.stringify({
+              address: events[0].address,
+              fromBlock,
+              toBlock,
+            });
+            await this._logPublisher.pushMessage(logQueueMsg);
+            logger.info(`Push ${logQueueMsg} to log queue`);
+          }
           //update cached
           await this._redisService.setValue(lastReadBlockRedisKey, toBlock);
         }
