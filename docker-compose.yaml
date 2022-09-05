@@ -17,6 +17,7 @@ services:
       - filter_event_worker_log:/app/logs
     command: FilterEvent
 
+
   save_data:
     build: .
     container_name: save_data_worker
@@ -24,6 +25,14 @@ services:
     volumes:
       - save_data_worker_log:/app/logs
     command: SaveData
+  save_log:
+    build: .
+    container_name: save_log_worker
+    image: token-indexer
+    volumes:
+      - save_log_worker_log:/app/logs
+    command: SaveLog
+
 #Volume mounting for saving logs files
 volumes:
   push_event_worker_log:
@@ -32,3 +41,5 @@ volumes:
     name: filter_event_worker_log
   save_data_worker_log:
     name: save_data_worker_log
+  save_log_worker_log:
+    name: save_log_worker_log
