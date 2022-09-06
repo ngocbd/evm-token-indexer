@@ -24,6 +24,7 @@ export default class PushEventWorker {
     this._logPublisher = new Publisher(SAVE_LOG_QUEUE_NAME);
     this._tokenContractService = new TokenContractService();
     this._firstRecognizedTokenBlock = 980_743;
+    // this._firstRecognizedTokenBlock = 14481371 ;
     this._redisService = new RedisService();
     this._transferEventService = new TransferEventService();
   }

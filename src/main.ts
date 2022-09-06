@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import {
   CLOUD_FLARE_GATEWAY_ETH_RPC_URL,
   ETH_MAIN_NET_RPC_URL,
@@ -18,13 +19,16 @@ import Receiver from './workers/Receiver';
 import logger from './logger';
 import { sleep } from './utils';
 import SaveLogWorker from './workers/SaveLogWorker';
+import yargs from 'yargs';
+import { hideBin } from 'yargs/helpers';
 
 const main = async () => {
-  const appCommandLineArgs = process.argv.slice(2);
+  const argv = yargs(hideBin(process.argv)).argv
   const provider = new ethers.providers.JsonRpcProvider(ETH_MAIN_NET_RPC_URL);
 
-  if (appCommandLineArgs.length > 0) {
-    const workerName = appCommandLineArgs[0];
+
+  const workerName = argv.worker
+  if (workerName) {
     switch (workerName) {
       case LIST_AVAILABLE_WORKERS.SaveDataWorker:
         await new SaveDataWorker(provider).run();
@@ -63,12 +67,16 @@ const main = async () => {
         break;
       case 'list-workers':
         console.log('Available workers: ');
-        console.log(LIST_AVAILABLE_WORKERS);
+        for (const [key, value] of Object.entries(LIST_AVAILABLE_WORKERS)) {
+          console.log(`${key}: $ npm run worker ${value}`);
+        }
         break;
       default:
         console.error(`Worker ${workerName} is not available`);
         console.log('Available workers: ');
-        console.log(LIST_AVAILABLE_WORKERS);
+        for (const [key, value] of Object.entries(LIST_AVAILABLE_WORKERS)) {
+          console.log(`${key}: $ npm run worker ${value}`);
+        }
         break;
     }
   }
