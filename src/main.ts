@@ -24,7 +24,7 @@ import { hideBin } from 'yargs/helpers';
 
 const main = async () => {
   const argv = yargs(hideBin(process.argv)).argv
-  const provider = new ethers.providers.JsonRpcProvider(ETH_MAIN_NET_RPC_URL);
+  const provider = new ethers.providers.JsonRpcProvider(CLOUD_FLARE_GATEWAY_ETH_RPC_URL);
 
 
   const workerName = argv.worker
