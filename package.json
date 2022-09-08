@@ -10,7 +10,8 @@
       "lint": "eslint src --fix",
       "typeorm": "typeorm-ts-node-commonjs",
       "worker": "npm start -- --worker",
-      "worker:list": "npm start -- --worker=list-workers"
+      "worker:list": "npm start -- --worker=list-workers",
+      "queue:status": "npm start -- --task=queue-status"
    },
    "repository": {
       "type": "git",

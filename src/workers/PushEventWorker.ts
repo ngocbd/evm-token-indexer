@@ -3,6 +3,7 @@ import { Publisher } from './index';
 import {
   EVENT_TRANSFER_QUEUE_NAME,
   lastReadBlockRedisKey,
+  PUSH_EVENT_ERROR_QUEUE_NAME,
   SAVE_LOG_QUEUE_NAME,
 } from '../constants';
 import logger from '../logger';
@@ -12,6 +13,7 @@ import RedisService from '../services/RedisService';
 export default class PushEventWorker {
   _provider: ethers.providers.JsonRpcProvider;
   _publisher: Publisher;
+  _errorPublisher: Publisher;
   _logPublisher: Publisher;
   _tokenContractService: TokenContractService;
   _transferEventService: TransferEventService;
@@ -21,6 +23,7 @@ export default class PushEventWorker {
   constructor(provider: ethers.providers.JsonRpcProvider) {
     this._provider = provider;
     this._publisher = new Publisher(EVENT_TRANSFER_QUEUE_NAME);
+    this._errorPublisher = new Publisher(PUSH_EVENT_ERROR_QUEUE_NAME);
     this._logPublisher = new Publisher(SAVE_LOG_QUEUE_NAME);
     this._tokenContractService = new TokenContractService();
     this._firstRecognizedTokenBlock = 980_743;
@@ -51,11 +54,8 @@ export default class PushEventWorker {
       : this._firstRecognizedTokenBlock;
   }
 
-  async pushEventTransfer() {
-    const blockLength = 100;
-
+  async getTransferLogs(fromBlock, toBlock, retries = 3) {
     try {
-      await this._redisService.init();
       const erc20TransferMethodTopic = utils.id(
         'Transfer(address,address,uint256)',
       );
@@ -65,6 +65,45 @@ export default class PushEventWorker {
       const erc1155TransferBatchTopic = utils.id(
         'TransferBatch(address,address,address,uint256[],uint256[])',
       );
+
+      const transferEventLogs = await this._provider.getLogs({
+        fromBlock,
+        toBlock,
+        topics: [
+          [
+            erc20TransferMethodTopic,
+            erc1155TransferBatchTopic,
+            erc1155TransferSingleTopic,
+          ],
+        ],
+      });
+      return transferEventLogs;
+    } catch (err: any) {
+      if (retries > 0) {
+        logger.warn(
+          `Blocks: ${fromBlock} => ${toBlock} get transfer logs failed retries left: ${retries}`,
+        );
+        return this.getTransferLogs(fromBlock, toBlock, retries - 1);
+      }
+      logger.error(
+        'Blocks: ${fromBlock} => ${toBlock} get transfer logs error: ' + err,
+      );
+
+      const errorMsg = JSON.stringify({
+        err: err?.message || '',
+        fromBlock,
+        toBlock,
+      });
+      await this._errorPublisher.pushMessage(errorMsg);
+      logger.info(`Push ${errorMsg} to error queue`);
+      return null;
+    }
+  }
+
+  async pushEventTransfer() {
+    const blockLength = 100;
+    try {
+      await this._redisService.init();
       const currentChainBlockNumber = await this._provider.getBlockNumber();
       console.log('block height: ', currentChainBlockNumber);
       const startBlock = await this._detectStartBlock();
@@ -74,6 +113,7 @@ export default class PushEventWorker {
       }
 
       const transferEventsMap = new Map<string, unknown[]>();
+
       for (
         let i = +startBlock;
         i <= currentChainBlockNumber;
@@ -83,23 +123,13 @@ export default class PushEventWorker {
         let toBlock = fromBlock + blockLength;
         if (toBlock >= currentChainBlockNumber)
           toBlock = currentChainBlockNumber;
-        const transferEventLogs = await this._provider.getLogs({
+        const transferEventLogs = await this.getTransferLogs(
           fromBlock,
           toBlock,
-          topics: [
-            [
-              erc20TransferMethodTopic,
-              erc1155TransferBatchTopic,
-              erc1155TransferSingleTopic,
-            ],
-          ],
-        });
-        // const transferEventLogs = logs.filter(
-        //   (item) =>
-        //     item.topics[0] === erc20TransferMethodTopic ||
-        //     item.topics[0] === erc1155TransferBatchTopic ||
-        //     item.topics[0] === erc1155TransferSingleTopic,
-        // );
+        );
+        if (!transferEventLogs) {
+          continue;
+        }
         console.log(
           `blocks ${fromBlock} => ${toBlock} transfer event count:  ${transferEventLogs.length}`,
         );

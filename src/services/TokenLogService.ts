@@ -1,5 +1,5 @@
 import { Repository } from 'typeorm';
-import { TokenLog, TransferEvent } from '../entity';
+import { TokenLog } from '../entity';
 import { AppDataSource } from '../data-source';
 
 export default class TokenLogService {

@@ -1,6 +1,6 @@
 import { Receiver } from './index';
 
-import { SAVE_DATA_QUEUE_NAME, SAVE_LOG_QUEUE_NAME } from '../constants';
+import { SAVE_LOG_QUEUE_NAME } from '../constants';
 import { ethers } from 'ethers';
 import TokenLogService from '../services/TokenLogService';
 import { TokenLog } from '../entity';

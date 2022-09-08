@@ -4,7 +4,7 @@ services:
   push_event:
     build: .
     container_name: push_event_worker
-    image: token-indexer
+    image: lilhuy0405/4bytes-token-indexer
     volumes:
       - push_event_worker_log:/app/logs
     command: PushEvent
@@ -12,7 +12,7 @@ services:
   filter_event:
     build: .
     container_name: filter_event_worker
-    image: token-indexer
+    image: lilhuy0405/4bytes-token-indexer
     volumes:
       - filter_event_worker_log:/app/logs
     command: FilterEvent
@@ -21,14 +21,14 @@ services:
   save_data:
     build: .
     container_name: save_data_worker
-    image: token-indexer
+    image: lilhuy0405/4bytes-token-indexer
     volumes:
       - save_data_worker_log:/app/logs
     command: SaveData
   save_log:
     build: .
     container_name: save_log_worker
-    image: token-indexer
+    image: lilhuy0405/4bytes-token-indexer
     volumes:
       - save_log_worker_log:/app/logs
     command: SaveLog

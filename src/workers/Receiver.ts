@@ -1,5 +1,6 @@
 import * as amqp from 'amqplib';
 import 'dotenv/config';
+import { RABBITMQ_URL } from '../constants';
 
 export default class Receiver {
   private readonly _queueName: string;
@@ -14,7 +15,7 @@ export default class Receiver {
     let connection = Receiver._rabbitMQConnection;
     if (!connection) {
       console.log('[AMQP] create connection');
-      connection = await amqp.connect(process.env.RABBITMQ_URL);
+      connection = await amqp.connect(RABBITMQ_URL);
       Receiver._rabbitMQConnection = connection;
     }
     let channel = Receiver._rabbitMQChannel;
