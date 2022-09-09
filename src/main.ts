@@ -8,8 +8,8 @@ import {
   SAVE_DATA_QUEUE_NAME,
   SAVE_LOG_QUEUE_NAME,
 } from './constants';
-import { ethers } from 'ethers';
-import { AppDataSource } from './data-source';
+import {ethers} from 'ethers';
+import {AppDataSource} from './data-source';
 //typeorm migration
 import 'reflect-metadata';
 import {
@@ -20,11 +20,12 @@ import {
 } from './workers';
 import Receiver from './workers/Receiver';
 import logger from './logger';
-import { getQueueStatus, sleep } from './utils';
+import {getQueueStatus, sleep} from './utils';
 import SaveLogWorker from './workers/SaveLogWorker';
 import yargs from 'yargs';
-import { hideBin } from 'yargs/helpers';
+import {hideBin} from 'yargs/helpers';
 import RedisService from './services/RedisService';
+import {RabbitMqService} from "./services";
 
 const main = async () => {
   const argv = yargs(hideBin(process.argv)).argv;
@@ -33,6 +34,9 @@ const main = async () => {
   );
   const workerName = argv.worker;
   const task = argv.task;
+  const worker = new PushEventWorker(provider);
+
+
   if (task) {
     if (task === 'queue-status') {
       const latestBlock = await provider.getBlockNumber();
@@ -70,16 +74,18 @@ const main = async () => {
         await pushEventWorker.run();
         break;
       case LIST_AVAILABLE_WORKERS.ReceiverWorker:
-        await new Receiver('evm-indexer').consumeMessage(async (msg) => {
-          console.log(msg);
-        });
+        const rabbitMqService2 = new RabbitMqService();
+        await rabbitMqService2.consumeMessage('test', async (message) => {
+          console.log('message', message);
+        })
         break;
       case LIST_AVAILABLE_WORKERS.PublisherWorker:
-        const publisher = new Publisher(SAVE_LOG_QUEUE_NAME);
+        const rabbitMqService = new RabbitMqService();
         for (let i = 0; i < 100; i++) {
-          const res = await publisher.getReceiverCount();
-          console.log(res);
-          await sleep(2000);
+          const start = Date.now();
+          await rabbitMqService.pushMessage('test', 'test');
+          const end = Date.now();
+          console.log(`Push message ${i} in ${end - start} ms`);
         }
         break;
       case LIST_AVAILABLE_WORKERS.ClearDatabase:

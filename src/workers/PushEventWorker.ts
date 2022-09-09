@@ -1,5 +1,5 @@
-import { ethers, utils } from 'ethers';
-import { Publisher } from './index';
+import {ethers, utils} from 'ethers';
+import {Publisher} from './index';
 import {
   EVENT_TRANSFER_QUEUE_NAME,
   lastReadBlockRedisKey,
@@ -7,25 +7,20 @@ import {
   SAVE_LOG_QUEUE_NAME,
 } from '../constants';
 import logger from '../logger';
-import { TokenContractService, TransferEventService } from '../services';
+import {RabbitMqService, TokenContractService, TransferEventService} from '../services';
 import RedisService from '../services/RedisService';
 
 export default class PushEventWorker {
   _provider: ethers.providers.JsonRpcProvider;
-  _publisher: Publisher;
-  _errorPublisher: Publisher;
-  _logPublisher: Publisher;
-  _tokenContractService: TokenContractService;
+  _rabbitMqService: RabbitMqService;
+
   _transferEventService: TransferEventService;
   _firstRecognizedTokenBlock: number;
   _redisService: RedisService;
 
   constructor(provider: ethers.providers.JsonRpcProvider) {
     this._provider = provider;
-    this._publisher = new Publisher(EVENT_TRANSFER_QUEUE_NAME);
-    this._errorPublisher = new Publisher(PUSH_EVENT_ERROR_QUEUE_NAME);
-    this._logPublisher = new Publisher(SAVE_LOG_QUEUE_NAME);
-    this._tokenContractService = new TokenContractService();
+    this._rabbitMqService = new RabbitMqService();
     this._firstRecognizedTokenBlock = 980_743;
     // this._firstRecognizedTokenBlock = 14481371 ;
     this._redisService = new RedisService();
@@ -94,7 +89,7 @@ export default class PushEventWorker {
         fromBlock,
         toBlock,
       });
-      await this._errorPublisher.pushMessage(errorMsg);
+      await this._rabbitMqService.pushMessage(PUSH_EVENT_ERROR_QUEUE_NAME, errorMsg);
       logger.info(`Push ${errorMsg} to error queue`);
       return null;
     }
@@ -151,20 +146,20 @@ export default class PushEventWorker {
           }
           const events = result.value;
           const message = JSON.stringify(events);
-          await this._publisher.pushMessage(message);
+          await this._rabbitMqService.pushMessage(EVENT_TRANSFER_QUEUE_NAME, message);
           logger.info(
             `Push ${events.length} events of token ${events[0].address} to queue`,
           );
           //push to save log queue only when this queue has receivers
-          const logQueueReceiverCount =
-            await this._logPublisher.getReceiverCount();
-          if (logQueueReceiverCount > 0) {
+          const queueStatus =
+            await this._rabbitMqService.getQueueStatus(SAVE_LOG_QUEUE_NAME);
+          if (queueStatus.consumerCount > 0) {
             const logQueueMsg = JSON.stringify({
               address: events[0].address,
               fromBlock,
               toBlock,
             });
-            await this._logPublisher.pushMessage(logQueueMsg);
+            await this._rabbitMqService.pushMessage(SAVE_LOG_QUEUE_NAME, logQueueMsg);
             logger.info(`Push ${logQueueMsg} to log queue`);
           }
           //update cached
@@ -176,6 +171,73 @@ export default class PushEventWorker {
       logger.error('Push event error: ' + err);
     }
   }
+
+  async testPushEventTransfer(fromBlock, toBlock) {
+    try {
+      const startTime1 = new Date().getTime();
+      const transferEventsMap = new Map<string, unknown[]>();
+
+      const transferEventLogs = await this.getTransferLogs(
+        fromBlock,
+        toBlock,
+      );
+      if (!transferEventLogs) {
+        return;
+      }
+      console.log(
+        `blocks ${fromBlock} => ${toBlock} transfer event count:  ${transferEventLogs.length}`,
+      );
+      const endTime1 = new Date().getTime();
+
+      const startTime2 = new Date().getTime();
+      transferEventLogs.forEach((item) => {
+        const contractAddress = item.address;
+        if (!transferEventsMap.has(contractAddress)) {
+          transferEventsMap.set(contractAddress, [item]);
+        } else {
+          const events = transferEventsMap.get(contractAddress) as unknown[];
+          events.push(item);
+          transferEventsMap.set(contractAddress, events);
+        }
+      });
+      const endTime2 = new Date().getTime();
+
+      const startTime3 = new Date().getTime();
+      const currentCursor = transferEventsMap.values();
+      while (true) {
+        const result = currentCursor.next();
+        if (result.done) {
+          break;
+        }
+        const events = result.value;
+        const message = JSON.stringify(events);
+        await this._rabbitMqService.pushMessage("test","message");
+        logger.info(
+          `Push ${events.length} events of token ${events[0].address} to queue`,
+        );
+        //push to save log queue only when this queue has receivers
+
+        if (true) {
+          const logQueueMsg = JSON.stringify({
+            address: events[0].address,
+            fromBlock,
+            toBlock,
+          });
+          await this._rabbitMqService.pushMessage("test-log", "test");
+          logger.info(`Push ${logQueueMsg} to log queue`);
+        }
+        //update cached
+        // await this._redisService.setValue(lastReadBlockRedisKey, toBlock);
+      }
+      const endTime3 = new Date().getTime();
+      console.log('get logs time: ', endTime1 - startTime1);
+      console.log('parse logs time: ', endTime2 - startTime2);
+      console.log('push logs time: ', endTime3 - startTime3);
+    } catch (err: any) {
+      logger.error('Push event error: ' + err);
+    }
+  }
+
 
   async run() {
     await this.pushEventTransfer();

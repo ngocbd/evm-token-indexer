@@ -1,7 +1,7 @@
-import { ethers } from 'ethers';
+import {ethers} from 'ethers';
 import logger from '../logger';
 import * as amqp from 'amqplib';
-import { RABBITMQ_URL } from '../constants';
+import {RABBITMQ_URL} from '../constants';
 
 export const deletePadZero = (hexNumber: string) => {
   if (!hexNumber) return '';
@@ -16,7 +16,7 @@ export const getContract = (
 };
 export const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-export const getQueueStatus = async (queueName: string) => {
+export async function getQueueStatus(queueName: string): Promise<{queue: string, messageCount: number, consumerCount: number}> {
   try {
     const connection = await amqp.connect(RABBITMQ_URL);
 
@@ -30,4 +30,4 @@ export const getQueueStatus = async (queueName: string) => {
     logger.error('AMPQ error: ', err);
     return null;
   }
-};
+}

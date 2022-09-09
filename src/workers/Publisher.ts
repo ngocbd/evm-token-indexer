@@ -1,7 +1,7 @@
 import * as amqp from 'amqplib';
 import 'dotenv/config';
 import logger from '../logger';
-import { RABBITMQ_URL } from '../constants';
+import {RABBITMQ_URL} from '../constants';
 
 export default class Publisher {
   private readonly _queueName: string;
@@ -33,11 +33,12 @@ export default class Publisher {
       let channel = Publisher._rabbitMQChannel;
       if (!channel) {
         console.log('[AMQP] create channel');
-        channel = await connection.createConfirmChannel();
+        channel = await connection.createChannel();
         Publisher._rabbitMQChannel = channel;
       }
       const queue = await channel.assertQueue(this._queueName, {
         durable: false,
+
       });
       return queue.consumerCount;
     } catch (err) {
@@ -55,19 +56,11 @@ export default class Publisher {
         connection = await amqp.connect(RABBITMQ_URL);
         Publisher._rabbitMQConnection = connection;
       }
-      connection.on('error', function (err) {
-        if (err.message !== 'Connection closing') {
-          console.error('[AMQP] conn error', err.message);
-        }
-      });
-      // connection.on("close", () => {
-      //   console.error("[AMQP] reconnecting");
-      //   return setTimeout(async () => await this.pushMessage(message), 1000);
-      // });
+
       let channel = Publisher._rabbitMQChannel;
       if (!channel) {
         console.log('[AMQP] create channel');
-        channel = await connection.createConfirmChannel();
+        channel = await connection.createChannel();
         Publisher._rabbitMQChannel = channel;
       }
       const queue = await channel.assertQueue(this._queueName, {
