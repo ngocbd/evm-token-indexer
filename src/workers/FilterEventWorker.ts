@@ -10,22 +10,20 @@ import {
   INTERFACE_ERC155_ABI,
   SAVE_DATA_QUEUE_NAME,
 } from '../constants';
-import { Publisher, Receiver } from './index';
-import { TokenContractService } from '../services';
+
+import { RabbitMqService, TokenContractService } from '../services';
 import { getContract, sleep } from '../utils';
 import { TokenContract } from '../entity';
 import logger from '../logger';
 
 export default class FilterEventWorker {
   _provider: ethers.providers.JsonRpcProvider;
-  _publisher: Publisher;
-  _receiver: Receiver;
+  _rabbitMqService: RabbitMqService;
   _tokenContractService: TokenContractService;
 
   constructor(provider: ethers.providers.JsonRpcProvider) {
     this._provider = provider;
-    this._publisher = new Publisher(SAVE_DATA_QUEUE_NAME);
-    this._receiver = new Receiver(EVENT_TRANSFER_QUEUE_NAME);
+    this._rabbitMqService = new RabbitMqService();
     this._tokenContractService = new TokenContractService();
   }
 
@@ -160,7 +158,10 @@ export default class FilterEventWorker {
         transferEvents: listTransferEvents,
         isNewToken: false,
       });
-      await this._publisher.pushMessage(messageToQueue);
+      await this._rabbitMqService.pushMessage(
+        SAVE_DATA_QUEUE_NAME,
+        messageToQueue,
+      );
       logger.info(
         `push message to queue for exist valid token: ${tokenContract.name} - ${tokenAddress}`,
       );
@@ -180,7 +181,10 @@ export default class FilterEventWorker {
         transferEvents: [],
         isNewToken: true,
       });
-      await this._publisher.pushMessage(messageToQueue);
+      await this._rabbitMqService.pushMessage(
+        SAVE_DATA_QUEUE_NAME,
+        messageToQueue,
+      );
       logger.info(
         `push message to queue for invalid token: ${tokenAddress} and skip all transfers events...`,
       );
@@ -200,7 +204,10 @@ export default class FilterEventWorker {
       transferEvents: listTransferEvents,
       isNewToken: true,
     });
-    await this._publisher.pushMessage(messageToQueue);
+    await this._rabbitMqService.pushMessage(
+      SAVE_DATA_QUEUE_NAME,
+      messageToQueue,
+    );
     logger.info(
       `push message to queue for new token: ${tokenContract.name} - ${tokenAddress}`,
     );
@@ -208,6 +215,9 @@ export default class FilterEventWorker {
   }
 
   async run() {
-    await this._receiver.consumeMessage(this.filterEventTransfer.bind(this));
+    await this._rabbitMqService.consumeMessage(
+      EVENT_TRANSFER_QUEUE_NAME,
+      this.filterEventTransfer.bind(this),
+    );
   }
 }

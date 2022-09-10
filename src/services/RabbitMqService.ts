@@ -1,17 +1,15 @@
 import * as amqp from 'amqplib';
-import logger from "../logger";
+import logger from '../logger';
+import { RABBITMQ_URL } from '../constants';
 
 export default class RabbitMqService {
   private _rabbitMQConnection: amqp.Connection;
   private _rabbitMQChannel: amqp.Channel;
 
-  constructor() {
-  }
-
   async init() {
     try {
       console.log('[AMQP] create connection');
-      this._rabbitMQConnection = await amqp.connect(process.env.RABBITMQ_URL);
+      this._rabbitMQConnection = await amqp.connect(RABBITMQ_URL);
       this._rabbitMQChannel = await this._rabbitMQConnection.createChannel();
       return this;
     } catch (err: any) {
@@ -20,7 +18,9 @@ export default class RabbitMqService {
     }
   }
 
-  async getQueueStatus(queueName: string): Promise<{ queue: string, messageCount: number, consumerCount: number }> {
+  async getQueueStatus(
+    queueName: string,
+  ): Promise<{ queue: string; messageCount: number; consumerCount: number }> {
     try {
       if (!this._rabbitMQChannel || !this._rabbitMQConnection) {
         await this.init();
@@ -49,10 +49,12 @@ export default class RabbitMqService {
       logger.error(`AMPQ push ${message} to ${queueName} failed `, err);
       return null;
     }
-
   }
 
-  async consumeMessage(queueName: string, messageHandler: (message: string) => Promise<any>) {
+  async consumeMessage(
+    queueName: string,
+    messageHandler: (message: string) => Promise<any>,
+  ) {
     try {
       if (!this._rabbitMQChannel || !this._rabbitMQConnection) {
         await this.init();
@@ -76,4 +78,11 @@ export default class RabbitMqService {
     }
   }
 
+  close() {
+    if (!this._rabbitMQConnection) {
+      return;
+    }
+    this._rabbitMQConnection.close();
+    this._rabbitMQChannel.close();
+  }
 }

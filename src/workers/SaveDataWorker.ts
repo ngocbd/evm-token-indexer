@@ -1,5 +1,5 @@
-import { Receiver } from './index';
 import {
+  RabbitMqService,
   TokenContractService,
   TransactionService,
   TransferEventService,
@@ -13,7 +13,7 @@ import RedisService from '../services/RedisService';
 import TokenType from '../enums/TokenType';
 
 export default class SaveDataWorker {
-  _receiver: Receiver;
+  _rabbitMqService: RabbitMqService;
   _tokenContractService: TokenContractService;
   _transferEventService: TransferEventService;
   _transactionService: TransactionService;
@@ -21,7 +21,7 @@ export default class SaveDataWorker {
   _redisService: RedisService;
 
   constructor(provider: ethers.providers.JsonRpcProvider) {
-    this._receiver = new Receiver(SAVE_DATA_QUEUE_NAME);
+    this._rabbitMqService = new RabbitMqService();
     this._tokenContractService = new TokenContractService();
     this._transferEventService = new TransferEventService();
     this._transactionService = new TransactionService();
@@ -221,6 +221,9 @@ export default class SaveDataWorker {
 
   async run() {
     // await this.clearAllData();
-    await this._receiver.consumeMessage(this.saveData.bind(this));
+    await this._rabbitMqService.consumeMessage(
+      SAVE_DATA_QUEUE_NAME,
+      this.saveData.bind(this),
+    );
   }
 }

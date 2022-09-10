@@ -1,31 +1,15 @@
 #!/usr/bin/env node
-import {
-  CLOUD_FLARE_GATEWAY_ETH_RPC_URL,
-  EVENT_TRANSFER_QUEUE_NAME,
-  lastReadBlockRedisKey,
-  LIST_AVAILABLE_WORKERS,
-  PUSH_EVENT_ERROR_QUEUE_NAME,
-  SAVE_DATA_QUEUE_NAME,
-  SAVE_LOG_QUEUE_NAME,
-} from './constants';
-import {ethers} from 'ethers';
-import {AppDataSource} from './data-source';
+import {CLOUD_FLARE_GATEWAY_ETH_RPC_URL, LIST_AVAILABLE_WORKERS} from './constants';
+import { ethers } from 'ethers';
+import { AppDataSource } from './data-source';
 //typeorm migration
 import 'reflect-metadata';
-import {
-  FilterEventWorker,
-  Publisher,
-  PushEventWorker,
-  SaveDataWorker,
-} from './workers';
-import Receiver from './workers/Receiver';
+import { FilterEventWorker, PushEventWorker, SaveDataWorker } from './workers';
+
 import logger from './logger';
-import {getQueueStatus, sleep} from './utils';
 import SaveLogWorker from './workers/SaveLogWorker';
 import yargs from 'yargs';
-import {hideBin} from 'yargs/helpers';
-import RedisService from './services/RedisService';
-import {RabbitMqService} from "./services";
+import { hideBin } from 'yargs/helpers';
 
 const main = async () => {
   const argv = yargs(hideBin(process.argv)).argv;
@@ -33,33 +17,7 @@ const main = async () => {
     CLOUD_FLARE_GATEWAY_ETH_RPC_URL,
   );
   const workerName = argv.worker;
-  const task = argv.task;
-  const worker = new PushEventWorker(provider);
 
-
-  if (task) {
-    if (task === 'queue-status') {
-      const latestBlock = await provider.getBlockNumber();
-      const pushEventQueue = await getQueueStatus(EVENT_TRANSFER_QUEUE_NAME);
-      const saveDataQueue = await getQueueStatus(SAVE_DATA_QUEUE_NAME);
-      const saveLogQueue = await getQueueStatus(SAVE_LOG_QUEUE_NAME);
-      const errorQueue = await getQueueStatus(PUSH_EVENT_ERROR_QUEUE_NAME);
-      const redisService = new RedisService();
-      const currentSyncBlock =
-        (await redisService.getValue(lastReadBlockRedisKey)) || '0';
-
-      console.table([pushEventQueue, saveDataQueue, saveLogQueue, errorQueue]);
-      console.log(
-        `Current sync block: ${parseInt(currentSyncBlock).toLocaleString()}`,
-      );
-      console.log(`Latest block: ${latestBlock.toLocaleString()}`);
-      console.log(
-        'Block left: ',
-        (latestBlock - parseInt(currentSyncBlock)).toLocaleString(),
-      );
-      process.exit(0);
-    }
-  }
   if (workerName) {
     switch (workerName) {
       case LIST_AVAILABLE_WORKERS.SaveDataWorker:
@@ -70,23 +28,7 @@ const main = async () => {
         break;
       case LIST_AVAILABLE_WORKERS.PushEventWorker:
         const pushEventWorker = new PushEventWorker(provider);
-
         await pushEventWorker.run();
-        break;
-      case LIST_AVAILABLE_WORKERS.ReceiverWorker:
-        const rabbitMqService2 = new RabbitMqService();
-        await rabbitMqService2.consumeMessage('test', async (message) => {
-          console.log('message', message);
-        })
-        break;
-      case LIST_AVAILABLE_WORKERS.PublisherWorker:
-        const rabbitMqService = new RabbitMqService();
-        for (let i = 0; i < 100; i++) {
-          const start = Date.now();
-          await rabbitMqService.pushMessage('test', 'test');
-          const end = Date.now();
-          console.log(`Push message ${i} in ${end - start} ms`);
-        }
         break;
       case LIST_AVAILABLE_WORKERS.ClearDatabase:
         await new SaveDataWorker(provider).clearAllData();

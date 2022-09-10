@@ -1,18 +1,17 @@
-import { Receiver } from './index';
-
 import { SAVE_LOG_QUEUE_NAME } from '../constants';
 import { ethers } from 'ethers';
 import TokenLogService from '../services/TokenLogService';
 import { TokenLog } from '../entity';
 import logger from '../logger';
+import { RabbitMqService } from '../services';
 
 export default class SaveLogWorker {
-  private _receiver: Receiver;
+  private _rabbitMqService: RabbitMqService;
   private _tokenLogService: TokenLogService;
   private _provider: ethers.providers.JsonRpcProvider;
 
   constructor(provider: ethers.providers.JsonRpcProvider) {
-    this._receiver = new Receiver(SAVE_LOG_QUEUE_NAME);
+    this._rabbitMqService = new RabbitMqService();
     this._provider = provider;
     this._tokenLogService = new TokenLogService();
   }
@@ -46,6 +45,9 @@ export default class SaveLogWorker {
 
   async run() {
     // await this.clearAllData();
-    await this._receiver.consumeMessage(this.saveLog.bind(this));
+    await this._rabbitMqService.consumeMessage(
+      SAVE_LOG_QUEUE_NAME,
+      this.saveLog.bind(this),
+    );
   }
 }

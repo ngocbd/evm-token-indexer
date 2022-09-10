@@ -207,8 +207,6 @@ export const LIST_AVAILABLE_WORKERS = {
   SaveDataWorker: 'SaveData',
   PushEventWorker: 'PushEvent',
   FilterEventWorker: 'FilterEvent',
-  PublisherWorker: 'Publisher',
-  ReceiverWorker: 'Receiver',
   ClearDatabase: 'ClearData',
   SaveLogWorker: 'SaveLog',
 };
