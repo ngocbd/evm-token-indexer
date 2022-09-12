@@ -1,6 +1,6 @@
 import * as amqp from 'amqplib';
 import logger from '../logger';
-import { RABBITMQ_URL } from '../constants';
+import {RABBITMQ_URL} from '../constants';
 
 export default class RabbitMqService {
   private _rabbitMQConnection: amqp.Connection;
@@ -46,7 +46,7 @@ export default class RabbitMqService {
       }
 
       await this._rabbitMQChannel.sendToQueue(queueName, Buffer.from(message));
-      // return queue;
+      return true;
     } catch (err: any) {
       logger.error(`AMPQ push ${message} to ${queueName} failed `, err);
       return null;
@@ -85,6 +85,5 @@ export default class RabbitMqService {
       return;
     }
     this._rabbitMQConnection.close();
-    this._rabbitMQChannel.close();
   }
 }

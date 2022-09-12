@@ -22,6 +22,9 @@ const main = async () => {
   const workerName = argv.worker;
   const isSaveLog = +argv.saveLog === 1;
 
+  // const worker = new PushEventWorker(provider);
+  // await worker.testPushEventTransfer(4_298_543, 4_298_644);
+
   if (workerName) {
     switch (workerName) {
       case LIST_AVAILABLE_WORKERS.SaveDataWorker:
