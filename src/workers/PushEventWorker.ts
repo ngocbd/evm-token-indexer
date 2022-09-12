@@ -96,7 +96,7 @@ export default class PushEventWorker {
     }
   }
 
-  async pushEventTransfer() {
+  async pushEventTransfer(isSaveLogs: boolean) {
     const blockLength = 100;
     try {
       await this._redisService.init();
@@ -154,11 +154,8 @@ export default class PushEventWorker {
           logger.info(
             `Push ${events.length} events of token ${events[0].address} to queue`,
           );
-          //push to save log queue only when this queue has receivers
-          const queueStatus = await this._rabbitMqService.getQueueStatus(
-            SAVE_LOG_QUEUE_NAME,
-          );
-          if (queueStatus.consumerCount > 0) {
+
+          if (isSaveLogs) {
             const logQueueMsg = JSON.stringify({
               address: events[0].address,
               fromBlock,
@@ -243,8 +240,11 @@ export default class PushEventWorker {
     }
   }
 
-  async run() {
-    await this.pushEventTransfer();
+  async run(isSaveLogs = true) {
+    console.log(
+      `Start push event transfer with save logs option: ${isSaveLogs}`,
+    );
+    await this.pushEventTransfer(isSaveLogs);
     this._rabbitMqService.close();
   }
 }

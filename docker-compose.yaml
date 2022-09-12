@@ -7,12 +7,20 @@ services:
     image: lilhuy0405/4bytes-evm-token-indexer
     volumes:
       - push_event_worker_log:/app/logs
-    command: PushEvent
+    command: PushEvent -- --saveLog=0
+
+  push_event_save_log:
+    build: .
+    container_name: push_event_worker_save_log
+    image: lilhuy0405/4bytes-evm-token-indexer
+    volumes:
+      - push_event_worker_log:/app/logs
+    command: PushEvent -- --saveLog=1
 
   filter_event:
     build: .
     container_name: filter_event_worker
-    image: lilhuy0405/4bytes-evm-token-indexer:tagname
+    image: lilhuy0405/4bytes-evm-token-indexer
     volumes:
       - filter_event_worker_log:/app/logs
     command: FilterEvent
@@ -21,14 +29,14 @@ services:
   save_data:
     build: .
     container_name: save_data_worker
-    image: lilhuy0405/4bytes-evm-token-indexer:tagname
+    image: lilhuy0405/4bytes-evm-token-indexer
     volumes:
       - save_data_worker_log:/app/logs
     command: SaveData
   save_log:
     build: .
     container_name: save_log_worker
-    image: lilhuy0405/4bytes-evm-token-indexer:tagname
+    image: lilhuy0405/4bytes-evm-token-indexer
     volumes:
       - save_log_worker_log:/app/logs
     command: SaveLog

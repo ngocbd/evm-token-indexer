@@ -1,11 +1,13 @@
 #!/usr/bin/env node
-import {CLOUD_FLARE_GATEWAY_ETH_RPC_URL, LIST_AVAILABLE_WORKERS} from './constants';
+import {
+  CLOUD_FLARE_GATEWAY_ETH_RPC_URL,
+  LIST_AVAILABLE_WORKERS,
+} from './constants';
 import { ethers } from 'ethers';
 import { AppDataSource } from './data-source';
 //typeorm migration
 import 'reflect-metadata';
 import { FilterEventWorker, PushEventWorker, SaveDataWorker } from './workers';
-
 import logger from './logger';
 import SaveLogWorker from './workers/SaveLogWorker';
 import yargs from 'yargs';
@@ -16,7 +18,9 @@ const main = async () => {
   const provider = new ethers.providers.JsonRpcProvider(
     CLOUD_FLARE_GATEWAY_ETH_RPC_URL,
   );
+
   const workerName = argv.worker;
+  const isSaveLog = +argv.saveLog === 1;
 
   if (workerName) {
     switch (workerName) {
@@ -28,7 +32,7 @@ const main = async () => {
         break;
       case LIST_AVAILABLE_WORKERS.PushEventWorker:
         const pushEventWorker = new PushEventWorker(provider);
-        await pushEventWorker.run();
+        await pushEventWorker.run(isSaveLog);
         break;
       case LIST_AVAILABLE_WORKERS.ClearDatabase:
         await new SaveDataWorker(provider).clearAllData();

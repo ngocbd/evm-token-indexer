@@ -1,4 +1,4 @@
-import { SAVE_LOG_QUEUE_NAME } from '../constants';
+import { SAVE_LOG_ERROR_QUEUE_NAME, SAVE_LOG_QUEUE_NAME } from '../constants';
 import { ethers } from 'ethers';
 import TokenLogService from '../services/TokenLogService';
 import { TokenLog } from '../entity';
@@ -17,9 +17,9 @@ export default class SaveLogWorker {
   }
 
   async saveLog(message: string) {
+    const filter: { address: string; fromBlock: number; toBlock: number } =
+      JSON.parse(message);
     try {
-      const filter: { address: string; fromBlock: number; toBlock: number } =
-        JSON.parse(message);
       const logs = await this._provider.getLogs(filter);
       const res = await Promise.all(
         logs.map(async (log) => {
@@ -39,12 +39,23 @@ export default class SaveLogWorker {
       logger.info(`saved ${res.length} logs`);
     } catch (err) {
       console.log(err);
+      //push to error queue
+      const errorMsg = JSON.stringify({
+        err: err?.message || '',
+        fromBlock: filter.fromBlock,
+        toBlock: filter.toBlock,
+        address: filter.address,
+      });
+      await this._rabbitMqService.pushMessage(
+        SAVE_LOG_ERROR_QUEUE_NAME,
+        errorMsg,
+      );
+      logger.info(`Push ${errorMsg} to error queue`);
       logger.error(err);
     }
   }
 
   async run() {
-    // await this.clearAllData();
     await this._rabbitMqService.consumeMessage(
       SAVE_LOG_QUEUE_NAME,
       this.saveLog.bind(this),

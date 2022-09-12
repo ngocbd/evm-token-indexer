@@ -6,11 +6,15 @@ export default class RabbitMqService {
   private _rabbitMQConnection: amqp.Connection;
   private _rabbitMQChannel: amqp.Channel;
 
-  async init() {
+  //init connection and channel and queue if not exist
+  async init(queueName: string) {
     try {
       console.log('[AMQP] create connection');
       this._rabbitMQConnection = await amqp.connect(RABBITMQ_URL);
       this._rabbitMQChannel = await this._rabbitMQConnection.createChannel();
+      await this._rabbitMQChannel.assertQueue(queueName, {
+        durable: false,
+      });
       return this;
     } catch (err: any) {
       logger.error('AMPQ init connection error: ', err);
@@ -23,7 +27,7 @@ export default class RabbitMqService {
   ): Promise<{ queue: string; messageCount: number; consumerCount: number }> {
     try {
       if (!this._rabbitMQChannel || !this._rabbitMQConnection) {
-        await this.init();
+        await this.init(queueName);
       }
       const queue = await this._rabbitMQChannel.assertQueue(queueName, {
         durable: false,
@@ -38,13 +42,11 @@ export default class RabbitMqService {
   async pushMessage(queueName: string, message: string) {
     try {
       if (!this._rabbitMQChannel || !this._rabbitMQConnection) {
-        await this.init();
+        await this.init(queueName);
       }
-      const queue = await this._rabbitMQChannel.assertQueue(queueName, {
-        durable: false,
-      });
+
       await this._rabbitMQChannel.sendToQueue(queueName, Buffer.from(message));
-      return queue;
+      // return queue;
     } catch (err: any) {
       logger.error(`AMPQ push ${message} to ${queueName} failed `, err);
       return null;
@@ -57,7 +59,7 @@ export default class RabbitMqService {
   ) {
     try {
       if (!this._rabbitMQChannel || !this._rabbitMQConnection) {
-        await this.init();
+        await this.init(queueName);
       }
       const queue = await this._rabbitMQChannel.assertQueue(queueName, {
         durable: false,
