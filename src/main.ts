@@ -3,15 +3,17 @@ import {
   CLOUD_FLARE_GATEWAY_ETH_RPC_URL,
   LIST_AVAILABLE_WORKERS,
 } from './constants';
-import { ethers } from 'ethers';
-import { AppDataSource } from './data-source';
+import {ethers} from 'ethers';
+import {AppDataSource} from './data-source';
 //typeorm migration
 import 'reflect-metadata';
-import { FilterEventWorker, PushEventWorker, SaveDataWorker } from './workers';
+import {FilterEventWorker, PushEventWorker, SaveDataWorker} from './workers';
 import logger from './logger';
 import SaveLogWorker from './workers/SaveLogWorker';
 import yargs from 'yargs';
-import { hideBin } from 'yargs/helpers';
+import {hideBin} from 'yargs/helpers';
+import RedisService from "./services/RedisService";
+import {RabbitMqService} from "./services";
 
 const main = async () => {
   const argv = yargs(hideBin(process.argv)).argv;
@@ -22,8 +24,14 @@ const main = async () => {
   const workerName = argv.worker;
   const isSaveLog = +argv.saveLog === 1;
 
-  // const worker = new PushEventWorker(provider);
-  // await worker.testPushEventTransfer(4_298_543, 4_298_644);
+  // const rabbitMqService = new RabbitMqService();
+  // for (let i = 0; i < 5; i++) {
+  //   const startTime = Date.now();
+  //   await rabbitMqService.pushMessage('test', 'test');
+  //   const endTime = Date.now();
+  //   console.log(`Push message to rabbitmq in ${endTime - startTime} ms`);
+  // }
+
 
   if (workerName) {
     switch (workerName) {

@@ -101,7 +101,7 @@ export default class PushEventWorker {
     try {
       await this._redisService.init();
       const currentChainBlockNumber = await this._provider.getBlockNumber();
-      console.log('block height: ', currentChainBlockNumber);
+
       const startBlock = await this._detectStartBlock();
       if (currentChainBlockNumber <= startBlock) {
         logger.info('Has Sync To current block');
@@ -119,7 +119,7 @@ export default class PushEventWorker {
         let toBlock = fromBlock + blockLength;
         if (toBlock >= currentChainBlockNumber)
           toBlock = currentChainBlockNumber;
-        const start = Date.now();
+
         const transferEventLogs = await this.getTransferLogs(
           fromBlock,
           toBlock,
@@ -130,8 +130,7 @@ export default class PushEventWorker {
         console.log(
           `blocks ${fromBlock} => ${toBlock} transfer event count:  ${transferEventLogs.length}`,
         );
-        const end = Date.now();
-        console.log('get logs time: ', end - start);
+
         transferEventLogs.forEach((item) => {
           const contractAddress = item.address;
           if (!transferEventsMap.has(contractAddress)) {
@@ -150,7 +149,7 @@ export default class PushEventWorker {
           }
           const events = result.value;
           const message = JSON.stringify(events);
-          const startTime = Date.now();
+
           await this._rabbitMqService.pushMessage(
             EVENT_TRANSFER_QUEUE_NAME,
             message,
@@ -171,13 +170,11 @@ export default class PushEventWorker {
             );
             logger.info(`Push ${logQueueMsg} to log queue`);
           }
-          //update cached
-          await this._redisService.setValue(lastReadBlockRedisKey, toBlock);
-          const endTime = Date.now();
-          console.log("Push event time: ", endTime - startTime);
         }
         transferEventsMap.clear();
-        console.log(`next ${blockLength} blocks`);
+
+        await this._redisService.setValue(lastReadBlockRedisKey, toBlock);
+
       }
     } catch (err: any) {
       logger.error('Push event error: ' + err);

@@ -61,9 +61,6 @@ export default class RabbitMqService {
       if (!this._rabbitMQChannel || !this._rabbitMQConnection) {
         await this.init(queueName);
       }
-      const queue = await this._rabbitMQChannel.assertQueue(queueName, {
-        durable: false,
-      });
       await this._rabbitMQChannel.consume(queueName, (message) => {
         if (message) {
           const msqContent = message.content.toString();
@@ -73,7 +70,7 @@ export default class RabbitMqService {
           });
         }
       });
-      return queue;
+      return true;
     } catch (err: any) {
       logger.error(`AMPQ consume ${queueName} failed `, err);
       return null;
