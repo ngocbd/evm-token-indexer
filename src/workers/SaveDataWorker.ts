@@ -4,10 +4,10 @@ import {
   TransactionService,
   TransferEventService,
 } from '../services';
-import { lastReadBlockRedisKey, SAVE_DATA_QUEUE_NAME } from '../constants';
-import { TokenContract, Transaction, TransferEvent } from '../entity';
+import {lastReadBlockRedisKey, SAVE_DATA_QUEUE_NAME} from '../constants';
+import {TokenContract, Transaction, TransferEvent} from '../entity';
 import {convertFromHexToNumberString, deletePadZero, sleep} from '../utils';
-import { BigNumber, ethers, utils } from 'ethers';
+import {BigNumber, ethers, utils} from 'ethers';
 import logger from '../logger';
 import RedisService from '../services/RedisService';
 import TokenType from '../enums/TokenType';
@@ -77,7 +77,7 @@ export default class SaveDataWorker {
             for (let i = 0; i < idsNumber.length; i++) {
               const id = idsNumber[i];
               const amount = amountsNumber[i];
-              const toSaveCopy = { ...toSaveTransferEvent };
+              const toSaveCopy = {...toSaveTransferEvent};
               toSaveCopy.token_id = id;
               toSaveCopy.amount = amount;
               res = await this._transferEventService.save(toSaveCopy);
@@ -175,37 +175,32 @@ export default class SaveDataWorker {
       let toSaveTxnHash = '';
       for (let i = 0; i < data.transferEvents.length; i++) {
         const transferEvent = data.transferEvents[i];
-        try {
-          const savedTransferEvent = await this.saveTransferEvent(
-            transferEvent,
-            data.tokenContract,
-          );
-          const currentEventTxnHash = transferEvent.transactionHash;
 
-          //save transaction only when it is not saved yet
-          let savedTransaction: Transaction;
-          if (currentEventTxnHash !== toSaveTxnHash) {
-            toSaveTxnHash = currentEventTxnHash;
-            savedTransaction = await this.saveTransaction(toSaveTxnHash);
-          }
-          if (savedTransaction) {
-            logger.info(`Saved transaction ${savedTransaction.tx_hash}`);
-          }
-          if (savedTransferEvent) {
-            logger.info(
-              `Saved transfer event ${savedTransferEvent.tx_hash} log_index: ${savedTransferEvent.log_index}`,
-            );
-          }
-        } catch (err) {
-          logger.error(
-            `Saved txn and transfer event promise failed at txn ${transferEvent.transactionHash} log_index: ${transferEvent.logIndex} msg: ${err.message}`,
+        const savedTransferEvent = await this.saveTransferEvent(
+          transferEvent,
+          data.tokenContract,
+        );
+        const currentEventTxnHash = transferEvent.transactionHash;
+
+        //save transaction only when it is not saved yet
+        let savedTransaction: Transaction;
+        if (currentEventTxnHash !== toSaveTxnHash) {
+          toSaveTxnHash = currentEventTxnHash;
+          savedTransaction = await this.saveTransaction(toSaveTxnHash);
+        }
+        if (savedTransaction) {
+          logger.info(`Saved transaction ${savedTransaction.tx_hash}`);
+        }
+        if (savedTransferEvent) {
+          logger.info(
+            `Saved transfer event ${savedTransferEvent.tx_hash} log_index: ${savedTransferEvent.log_index}`,
           );
         }
       }
     } catch (err: any) {
       logger.error(`Save data failed for ${message} msg: ${err.message}`);
     }
-    console.log("done");
+    console.log('done');
   }
 
   //IMPORTANT: this method will delete all data in the database
