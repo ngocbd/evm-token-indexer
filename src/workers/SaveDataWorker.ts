@@ -6,7 +6,7 @@ import {
 } from '../services';
 import { lastReadBlockRedisKey, SAVE_DATA_QUEUE_NAME } from '../constants';
 import { TokenContract, Transaction, TransferEvent } from '../entity';
-import { deletePadZero, sleep } from '../utils';
+import {convertFromHexToNumberString, deletePadZero, sleep} from '../utils';
 import { BigNumber, ethers, utils } from 'ethers';
 import logger from '../logger';
 import RedisService from '../services/RedisService';
@@ -45,9 +45,7 @@ export default class SaveDataWorker {
           toSaveTransferEvent.tokenType = TokenType.ERC20;
           toSaveTransferEvent.from = deletePadZero(transferEvent.topics[1]);
           toSaveTransferEvent.to = deletePadZero(transferEvent.topics[2]);
-          toSaveTransferEvent.amount = BigNumber.from(
-            transferEvent.data,
-          ).toString();
+          toSaveTransferEvent.amount = convertFromHexToNumberString(transferEvent.data)
           toSaveTransferEvent.token_id = null;
           return await this._transferEventService.save(toSaveTransferEvent);
         case TokenType.ERC721:
@@ -55,7 +53,7 @@ export default class SaveDataWorker {
           toSaveTransferEvent.from = deletePadZero(transferEvent.topics[1]);
           toSaveTransferEvent.to = deletePadZero(transferEvent.topics[2]);
           toSaveTransferEvent.amount = '1';
-          const tokenId = BigNumber.from(transferEvent.topics[3]).toString();
+          const tokenId = convertFromHexToNumberString(transferEvent.topics[3]);
           toSaveTransferEvent.token_id = tokenId;
           return await this._transferEventService.save(toSaveTransferEvent);
         case TokenType.ERC1155:
@@ -175,39 +173,39 @@ export default class SaveDataWorker {
       }
 
       let toSaveTxnHash = '';
-      await Promise.all(
-        data.transferEvents.map(async (transferEvent: any) => {
-          try {
-            const savedTransferEvent = await this.saveTransferEvent(
-              transferEvent,
-              data.tokenContract,
-            );
-            const currentEventTxnHash = transferEvent.transactionHash;
+      for (let i = 0; i < data.transferEvents.length; i++) {
+        const transferEvent = data.transferEvents[i];
+        try {
+          const savedTransferEvent = await this.saveTransferEvent(
+            transferEvent,
+            data.tokenContract,
+          );
+          const currentEventTxnHash = transferEvent.transactionHash;
 
-            //save transaction only when it is not saved yet
-            let savedTransaction: Transaction;
-            if (currentEventTxnHash !== toSaveTxnHash) {
-              toSaveTxnHash = currentEventTxnHash;
-              savedTransaction = await this.saveTransaction(toSaveTxnHash);
-            }
-            if (savedTransaction) {
-              logger.info(`Saved transaction ${savedTransaction.tx_hash}`);
-            }
-            if (savedTransferEvent) {
-              logger.info(
-                `Saved transfer event ${savedTransferEvent.tx_hash} log_index: ${savedTransferEvent.log_index}`,
-              );
-            }
-          } catch (err) {
-            logger.error(
-              `Saved txn and transfer event promise failed at txn ${transferEvent.transactionHash} log_index: ${transferEvent.logIndex} msg: ${err.message}`,
+          //save transaction only when it is not saved yet
+          let savedTransaction: Transaction;
+          if (currentEventTxnHash !== toSaveTxnHash) {
+            toSaveTxnHash = currentEventTxnHash;
+            savedTransaction = await this.saveTransaction(toSaveTxnHash);
+          }
+          if (savedTransaction) {
+            logger.info(`Saved transaction ${savedTransaction.tx_hash}`);
+          }
+          if (savedTransferEvent) {
+            logger.info(
+              `Saved transfer event ${savedTransferEvent.tx_hash} log_index: ${savedTransferEvent.log_index}`,
             );
           }
-        }),
-      );
+        } catch (err) {
+          logger.error(
+            `Saved txn and transfer event promise failed at txn ${transferEvent.transactionHash} log_index: ${transferEvent.logIndex} msg: ${err.message}`,
+          );
+        }
+      }
     } catch (err: any) {
       logger.error(`Save data failed for ${message} msg: ${err.message}`);
     }
+    console.log("done");
   }
 
   //IMPORTANT: this method will delete all data in the database

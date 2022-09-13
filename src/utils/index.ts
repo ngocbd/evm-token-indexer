@@ -1,7 +1,7 @@
-import { ethers } from 'ethers';
+import {BigNumber, ethers} from 'ethers';
 import logger from '../logger';
 import * as amqp from 'amqplib';
-import { RABBITMQ_URL } from '../constants';
+import {RABBITMQ_URL} from '../constants';
 
 export const deletePadZero = (hexNumber: string) => {
   if (!hexNumber) return '';
@@ -30,6 +30,17 @@ export async function getQueueStatus(
     return queue;
   } catch (err) {
     logger.error('AMPQ error: ', err);
+    return null;
+  }
+}
+
+
+export const convertFromHexToNumberString = (input: any) => {
+  try {
+    return BigNumber.from(input).toString();
+
+  } catch (err) {
+    logger.error('convertFromHexToNumberString error: ', err?.message);
     return null;
   }
 }
