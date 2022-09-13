@@ -15,7 +15,7 @@ COPY . .
 
 # overwrite to production mode to use remote ressource
 RUN echo "PRODUCTION='1'" >> .env
-ENV NODE_OPTIONS=--max-old-space-size=8000
+ENV NODE_OPTIONS --max-old-space-size=8000
 # run worker
 ENTRYPOINT ["npm", "run", "worker"]
 # default worker parametter
