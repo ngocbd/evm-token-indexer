@@ -32,15 +32,6 @@ export default class PushEventWorker {
    * else use first recognized block
    * */
   private async _detectStartBlock(): Promise<number> {
-    const cachedBlock = await this._redisService.getValue(
-      lastReadBlockRedisKey,
-    );
-    if (
-      cachedBlock !== null &&
-      parseInt(cachedBlock) > this._firstRecognizedTokenBlock
-    ) {
-      return parseInt(cachedBlock);
-    }
     const inDbBlock = await this._transferEventService.getHighestBlock();
     return inDbBlock > this._firstRecognizedTokenBlock
       ? inDbBlock
@@ -99,7 +90,7 @@ export default class PushEventWorker {
   async pushEventTransfer(isSaveLogs: boolean) {
     const blockLength = 100;
     try {
-      await this._redisService.init();
+
       const currentChainBlockNumber = await this._provider.getBlockNumber();
 
       const startBlock = await this._detectStartBlock();
@@ -173,7 +164,6 @@ export default class PushEventWorker {
         }
         transferEventsMap.clear();
 
-        await this._redisService.setValue(lastReadBlockRedisKey, toBlock);
 
       }
     } catch (err: any) {
