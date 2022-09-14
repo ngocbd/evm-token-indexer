@@ -171,7 +171,6 @@ export default class SaveDataWorker {
           logger.info(`Saved token contract ${data.tokenContract.address}`);
         }
       }
-      console.log(data.transferEvents.length)
       let toSaveTxnHash = '';
       for (let i = 0; i < data.transferEvents.length; i++) {
         const transferEvent = data.transferEvents[i];
@@ -200,7 +199,6 @@ export default class SaveDataWorker {
     } catch (err: any) {
       logger.error(`Save data failed for ${message} msg: ${err.message}`);
     }
-    console.log('done');
   }
 
   //IMPORTANT: this method will delete all data in the database
