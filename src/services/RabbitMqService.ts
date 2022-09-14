@@ -15,8 +15,7 @@ export default class RabbitMqService {
       //consume one message at a time
       this._rabbitMQChannel.prefetch(1);
       await this._rabbitMQChannel.assertQueue(queueName, {
-        durable: true,
-
+        durable: false,
       });
       return this;
     } catch (err: any) {
