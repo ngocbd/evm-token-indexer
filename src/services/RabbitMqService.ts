@@ -12,8 +12,10 @@ export default class RabbitMqService {
       console.log('[AMQP] create connection');
       this._rabbitMQConnection = await amqp.connect(RABBITMQ_URL);
       this._rabbitMQChannel = await this._rabbitMQConnection.createChannel();
+      this._rabbitMQChannel.prefetch(1);
       await this._rabbitMQChannel.assertQueue(queueName, {
-        durable: false,
+        durable: true,
+
       });
       return this;
     } catch (err: any) {
@@ -69,6 +71,8 @@ export default class RabbitMqService {
             this._rabbitMQChannel.ack(message);
           });
         }
+      }, {
+        noAck: false,
       });
       return true;
     } catch (err: any) {

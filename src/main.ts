@@ -12,6 +12,8 @@ import logger from './logger';
 import SaveLogWorker from './workers/SaveLogWorker';
 import yargs from 'yargs';
 import {hideBin} from 'yargs/helpers';
+import {RabbitMqService} from "./services";
+import {sleep} from "./utils";
 
 
 const main = async () => {
@@ -22,7 +24,7 @@ const main = async () => {
 
   const workerName = argv.worker;
   const isSaveLog = +argv.saveLog === 1;
-
+  const rabbitMqService = new RabbitMqService();
 
   if (workerName) {
     switch (workerName) {
@@ -42,6 +44,23 @@ const main = async () => {
         break;
       case LIST_AVAILABLE_WORKERS.SaveLogWorker:
         await new SaveLogWorker(provider).run();
+        break;
+      case "publish":
+        for (let i = 0; i < 10; i++) {
+          await rabbitMqService.pushMessage("test-receiver-durable", "test message " + i);
+          console.log("push message ", i);
+        }
+        await sleep(1000);
+        rabbitMqService.close();
+
+        break;
+      case "receive":
+        await rabbitMqService.consumeMessage("test-receiver-durable", async (msg) => {
+          const processTime =Math.floor(Math.random() * (2000 - 1000 + 1) + 1000)
+          console.log("processing message: ", msg.toString(), " for ", processTime, "ms");
+          await sleep(processTime);
+          console.log("done");
+        });
         break;
       case 'list-workers':
         console.log('Available workers: ');
