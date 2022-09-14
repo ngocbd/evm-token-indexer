@@ -8,6 +8,7 @@ import {
 import logger from '../logger';
 import {RabbitMqService, TransferEventService} from '../services';
 import RedisService from '../services/RedisService';
+import {sleep} from "../utils";
 
 export default class PushEventWorker {
   _provider: ethers.providers.JsonRpcProvider;
@@ -241,6 +242,7 @@ export default class PushEventWorker {
       `Start push event transfer with save logs option: ${isSaveLogs}`,
     );
     await this.pushEventTransfer(isSaveLogs);
+    await sleep(2000)
     this._rabbitMqService.close();
   }
 }

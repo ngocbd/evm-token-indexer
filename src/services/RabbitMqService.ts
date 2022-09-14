@@ -57,11 +57,15 @@ export default class RabbitMqService {
 
   async consumeMessage(
     queueName: string,
+    messagePerConsumer: number | undefined,
     messageHandler: (message: string) => Promise<any>,
   ) {
     try {
       if (!this._rabbitMQChannel || !this._rabbitMQConnection) {
         await this.init(queueName);
+      }
+      if(messagePerConsumer) {
+        this._rabbitMQChannel.prefetch(messagePerConsumer);
       }
       await this._rabbitMQChannel.consume(queueName, (message) => {
         if (message) {

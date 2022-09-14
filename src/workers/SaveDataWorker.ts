@@ -4,7 +4,7 @@ import {
   TransactionService,
   TransferEventService,
 } from '../services';
-import {lastReadBlockRedisKey, SAVE_DATA_QUEUE_NAME} from '../constants';
+import {lastReadBlockRedisKey, SAVE_DATA_QUEUE_NAME, SAVE_TRANSACTION_QUEUE_NAME} from '../constants';
 import {TokenContract, Transaction, TransferEvent} from '../entity';
 import {convertFromHexToNumberString, deletePadZero, sleep} from '../utils';
 import {BigNumber, ethers, utils} from 'ethers';
@@ -165,27 +165,33 @@ export default class SaveDataWorker {
         isNewToken: boolean;
       } = JSON.parse(message);
       //save token contract only when it's new
+      const startSaveToken = Date.now();
       if (data.isNewToken) {
         const res = await this._tokenContractService.save(data.tokenContract);
         if (res) {
           logger.info(`Saved token contract ${data.tokenContract.address}`);
         }
       }
+      const endSaveToken = Date.now();
+      console.log('save token', endSaveToken - startSaveToken);
       let toSaveTxnHash = '';
       for (let i = 0; i < data.transferEvents.length; i++) {
         const transferEvent = data.transferEvents[i];
-
+        const startSaveTransferEvent = Date.now();
         const savedTransferEvent = await this.saveTransferEvent(
           transferEvent,
           data.tokenContract,
         );
+        const endSaveTransferEvent = Date.now();
+        console.log('save transfer event', endSaveTransferEvent - startSaveTransferEvent);
         const currentEventTxnHash = transferEvent.transactionHash;
 
         //save transaction only when it is not saved yet
         let savedTransaction: Transaction;
         if (currentEventTxnHash !== toSaveTxnHash) {
           toSaveTxnHash = currentEventTxnHash;
-          savedTransaction = await this.saveTransaction(toSaveTxnHash);
+          await this._rabbitMqService.pushMessage(SAVE_TRANSACTION_QUEUE_NAME, toSaveTxnHash);
+          logger.info(`Pushed transaction ${toSaveTxnHash} to save txn queue`);
         }
         if (savedTransaction) {
           logger.info(`Saved transaction ${savedTransaction.tx_hash}`);
@@ -199,6 +205,7 @@ export default class SaveDataWorker {
     } catch (err: any) {
       logger.error(`Save data failed for ${message} msg: ${err.message}`);
     }
+    console.log('end');
   }
 
   //IMPORTANT: this method will delete all data in the database
@@ -214,6 +221,7 @@ export default class SaveDataWorker {
     // await this.clearAllData();
     await this._rabbitMqService.consumeMessage(
       SAVE_DATA_QUEUE_NAME,
+      undefined,
       this.saveData.bind(this),
     );
   }

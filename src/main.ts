@@ -7,7 +7,7 @@ import {ethers} from 'ethers';
 import {AppDataSource} from './data-source';
 //typeorm migration
 import 'reflect-metadata';
-import {FilterEventWorker, PushEventWorker, SaveDataWorker} from './workers';
+import {FilterEventWorker, PushEventWorker, SaveDataWorker, SaveTransactionWorker} from './workers';
 import logger from './logger';
 import SaveLogWorker from './workers/SaveLogWorker';
 import yargs from 'yargs';
@@ -36,6 +36,9 @@ const main = async () => {
       case LIST_AVAILABLE_WORKERS.PushEventWorker:
         const pushEventWorker = new PushEventWorker(provider);
         await pushEventWorker.run(isSaveLog);
+        break;
+      case LIST_AVAILABLE_WORKERS.SaveTransactionWorker:
+        await new SaveTransactionWorker(provider).run();
         break;
       case LIST_AVAILABLE_WORKERS.ClearDatabase:
         await new SaveDataWorker(provider).clearAllData();
