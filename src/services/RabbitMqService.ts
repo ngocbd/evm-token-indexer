@@ -13,7 +13,7 @@ export default class RabbitMqService {
       this._rabbitMQConnection = await amqp.connect(RABBITMQ_URL);
       this._rabbitMQChannel = await this._rabbitMQConnection.createChannel();
       //consume one message at a time
-      this._rabbitMQChannel.prefetch(1);
+      this._rabbitMQChannel.prefetch(100);
       await this._rabbitMQChannel.assertQueue(queueName, {
         durable: false,
       });
