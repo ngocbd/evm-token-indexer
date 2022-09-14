@@ -12,6 +12,7 @@ export default class RabbitMqService {
       console.log('[AMQP] create connection');
       this._rabbitMQConnection = await amqp.connect(RABBITMQ_URL);
       this._rabbitMQChannel = await this._rabbitMQConnection.createChannel();
+      //consume one message at a time
       this._rabbitMQChannel.prefetch(1);
       await this._rabbitMQChannel.assertQueue(queueName, {
         durable: true,
