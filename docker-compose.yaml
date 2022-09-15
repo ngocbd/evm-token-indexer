@@ -41,6 +41,14 @@ services:
       - save_log_worker_log:/app/logs
     command: SaveLog
 
+  save_transaction:
+    build: .
+    container_name: save_transaction_worker
+    image: lilhuy0405/4bytes-evm-token-indexer
+    volumes:
+      - save_transaction_worker_log:/app/logs
+    command: SaveTransaction
+
 #Volume mounting for saving logs files
 volumes:
   push_event_worker_log:
@@ -51,3 +59,5 @@ volumes:
     name: save_data_worker_log
   save_log_worker_log:
     name: save_log_worker_log
+  save_transaction_worker_log:
+    name: save_transaction_worker_log
