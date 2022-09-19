@@ -23,7 +23,11 @@ export default class SaveTransactionWorker {
     retryTime = 100,
   ): Promise<Transaction | null> {
     try {
+      const start1 = Date.now();
       const transaction = await this._provider.getTransaction(transactionHash);
+      const end1 = Date.now();
+      console.log(`Get transaction ${transactionHash} took ${end1 - start1} ms`);
+      const start2 = Date.now();
       const toSaveTransaction = new Transaction();
       toSaveTransaction.tx_hash = transaction.hash;
       toSaveTransaction.block_number = BigInt(transaction.blockNumber);
@@ -38,7 +42,13 @@ export default class SaveTransactionWorker {
         transaction.s.slice(2) +
         transaction.v.toString();
       toSaveTransaction.signature = signature;
-      return await this._transactionService.save(toSaveTransaction);
+      const end2 = Date.now();
+      console.log(`Create transaction ${transactionHash} took ${end2 - start2} ms`);
+      const startSaveToDb = new Date().getTime()
+      const res =  await this._transactionService.save(toSaveTransaction);
+      const end3 = Date.now();
+      console.log(`Save transaction to db took ${end3 - startSaveToDb} ms`);
+      return  res;
     } catch (err: any) {
       if (maxRetries > 0) {
         logger.warn(
@@ -61,7 +71,7 @@ export default class SaveTransactionWorker {
         return await this._transactionService.save(toSaveTransaction);
       } catch (err2) {
         logger.error(
-          `Save transaction failed for ${transactionHash} msg: ${err2.message} `,
+          ` Save transaction failed for ${transactionHash} msg: ${err2.message} `,
         );
       }
     }
@@ -69,11 +79,14 @@ export default class SaveTransactionWorker {
 
   async saveData(message: string) {
     try {
+      const start = Date.now();
       const res = await this.saveTransaction(message);
-      if(res) {
+      const end = Date.now();
+      console.log(`Total save transaction ${message} took ${end - start} ms`);
+      if (res) {
         logger.info(`Saved transaction ${message}`);
       }
-    }catch (err) {
+    } catch (err) {
       logger.error(`Save txn failed for ${message} msg: ${err.message}`);
     }
   }
@@ -82,7 +95,7 @@ export default class SaveTransactionWorker {
     // await this.clearAllData();
     await this._rabbitMqService.consumeMessage(
       SAVE_TRANSACTION_QUEUE_NAME,
-      500,
+      null,
       this.saveData.bind(this)
     );
   }
