@@ -165,33 +165,32 @@ export default class SaveDataWorker {
         isNewToken: boolean;
       } = JSON.parse(message);
       //save token contract only when it's new
-      const startSaveToken = Date.now();
       if (data.isNewToken) {
         const res = await this._tokenContractService.save(data.tokenContract);
         if (res) {
           logger.info(`Saved token contract ${data.tokenContract.address}`);
         }
       }
-      const endSaveToken = Date.now();
-      console.log('save token', endSaveToken - startSaveToken);
+
       let toSaveTxnHash = '';
       for (let i = 0; i < data.transferEvents.length; i++) {
         const transferEvent = data.transferEvents[i];
-        const startSaveTransferEvent = Date.now();
         const savedTransferEvent = await this.saveTransferEvent(
           transferEvent,
           data.tokenContract,
         );
-        const endSaveTransferEvent = Date.now();
-        console.log('save transfer event', endSaveTransferEvent - startSaveTransferEvent);
+
         const currentEventTxnHash = transferEvent.transactionHash;
 
         //save transaction only when it is not saved yet
         let savedTransaction: Transaction;
         if (currentEventTxnHash !== toSaveTxnHash) {
           toSaveTxnHash = currentEventTxnHash;
-          await this._rabbitMqService.pushMessage(SAVE_TRANSACTION_QUEUE_NAME, toSaveTxnHash);
-          logger.info(`Pushed transaction ${toSaveTxnHash} to save txn queue`);
+          // await this._rabbitMqService.pushMessage(SAVE_TRANSACTION_QUEUE_NAME, toSaveTxnHash);
+          // logger.info(`Pushed transaction ${toSaveTxnHash} to save txn queue`);
+
+          /*IMPORTANT: At this time just save txn_hash to speed up sync progress*/
+          savedTransaction = await this.saveTransactionHash(toSaveTxnHash);
         }
         if (savedTransaction) {
           logger.info(`Saved transaction ${savedTransaction.tx_hash}`);
@@ -224,5 +223,25 @@ export default class SaveDataWorker {
       undefined,
       this.saveData.bind(this),
     );
+  }
+
+  private async saveTransactionHash(transactionHash: string) {
+    try {
+      const toSaveTransaction = new Transaction();
+      toSaveTransaction.tx_hash = transactionHash;
+      toSaveTransaction.block_number = BigInt(-1);
+      toSaveTransaction.gasPrice = '-1';
+      toSaveTransaction.nonce = BigInt(-1);
+      toSaveTransaction.to = '0x';
+      toSaveTransaction.value = '0x';
+      toSaveTransaction.data = '0x';
+      toSaveTransaction.signature = '';
+      return await this._transactionService.save(toSaveTransaction);
+    }catch (err) {
+      logger.error(
+        `Save transaction failed for ${transactionHash} msg: ${err.message} `,
+      );
+      return null;
+    }
   }
 }
