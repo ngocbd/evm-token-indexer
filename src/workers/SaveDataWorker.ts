@@ -173,34 +173,67 @@ export default class SaveDataWorker {
       }
 
       let toSaveTxnHash = '';
-      for (let i = 0; i < data.transferEvents.length; i++) {
-        const transferEvent = data.transferEvents[i];
-        const savedTransferEvent = await this.saveTransferEvent(
-          transferEvent,
-          data.tokenContract,
-        );
-
+      await Promise.all(data.transferEvents.map((transferEvent: any) => {
         const currentEventTxnHash = transferEvent.transactionHash;
+        return new Promise(async (resolve, reject) => {
+          try {
+            const savedTransferEvent = await this.saveTransferEvent(
+              transferEvent,
+              data.tokenContract,
+            );
 
-        //save transaction only when it is not saved yet
-        let savedTransaction: Transaction;
-        if (currentEventTxnHash !== toSaveTxnHash) {
-          toSaveTxnHash = currentEventTxnHash;
-          // await this._rabbitMqService.pushMessage(SAVE_TRANSACTION_QUEUE_NAME, toSaveTxnHash);
-          // logger.info(`Pushed transaction ${toSaveTxnHash} to save txn queue`);
+            //save transaction only when it is not saved yet
+            let savedTransaction: Transaction;
+            if (currentEventTxnHash !== toSaveTxnHash) {
+              toSaveTxnHash = currentEventTxnHash;
+              // await this._rabbitMqService.pushMessage(SAVE_TRANSACTION_QUEUE_NAME, toSaveTxnHash);
+              // logger.info(`Pushed transaction ${toSaveTxnHash} to save txn queue`);
 
-          /*IMPORTANT: At this time just save txn_hash to speed up sync progress*/
-          savedTransaction = await this.saveTransactionHash(toSaveTxnHash);
-        }
-        if (savedTransaction) {
-          logger.info(`Saved transaction ${savedTransaction.tx_hash}`);
-        }
-        if (savedTransferEvent) {
-          logger.info(
-            `Saved transfer event ${savedTransferEvent.tx_hash} log_index: ${savedTransferEvent.log_index}`,
-          );
-        }
-      }
+              /*IMPORTANT: At this time just save txn_hash to speed up sync progress*/
+              savedTransaction = await this.saveTransactionHash(toSaveTxnHash);
+            }
+            if (savedTransaction) {
+              logger.info(`Saved transaction ${savedTransaction.tx_hash}`);
+            }
+            if (savedTransferEvent) {
+              logger.info(
+                `Saved transfer event ${savedTransferEvent.tx_hash} log_index: ${savedTransferEvent.log_index}`,
+              );
+            }
+            resolve(null);
+          } catch (err) {
+            reject(err);
+          }
+        })
+      }))
+      // for (let i = 0; i < data.transferEvents.length; i++) {
+      //   const transferEvent = data.transferEvents[i];
+      //   const savedTransferEvent = await this.saveTransferEvent(
+      //     transferEvent,
+      //     data.tokenContract,
+      //   );
+      //
+      //   const currentEventTxnHash = transferEvent.transactionHash;
+      //
+      //   //save transaction only when it is not saved yet
+      //   let savedTransaction: Transaction;
+      //   if (currentEventTxnHash !== toSaveTxnHash) {
+      //     toSaveTxnHash = currentEventTxnHash;
+      //     // await this._rabbitMqService.pushMessage(SAVE_TRANSACTION_QUEUE_NAME, toSaveTxnHash);
+      //     // logger.info(`Pushed transaction ${toSaveTxnHash} to save txn queue`);
+      //
+      //     /*IMPORTANT: At this time just save txn_hash to speed up sync progress*/
+      //     savedTransaction = await this.saveTransactionHash(toSaveTxnHash);
+      //   }
+      //   if (savedTransaction) {
+      //     logger.info(`Saved transaction ${savedTransaction.tx_hash}`);
+      //   }
+      //   if (savedTransferEvent) {
+      //     logger.info(
+      //       `Saved transfer event ${savedTransferEvent.tx_hash} log_index: ${savedTransferEvent.log_index}`,
+      //     );
+      //   }
+      // }
     } catch (err: any) {
       logger.error(`Save data failed for ${message} msg: ${err.message}`);
     }
@@ -237,7 +270,7 @@ export default class SaveDataWorker {
       toSaveTransaction.data = '0x';
       toSaveTransaction.signature = '';
       return await this._transactionService.save(toSaveTransaction);
-    }catch (err) {
+    } catch (err) {
       logger.error(
         `Save transaction failed for ${transactionHash} msg: ${err.message} `,
       );

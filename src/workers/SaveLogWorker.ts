@@ -20,6 +20,7 @@ export default class SaveLogWorker {
     const filter: { address: string; fromBlock: number; toBlock: number } =
       JSON.parse(message);
     try {
+
       const logs = await this._provider.getLogs(filter);
       const res = await Promise.all(
         logs.map(async (log) => {
