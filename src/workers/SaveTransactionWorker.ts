@@ -45,10 +45,10 @@ export default class SaveTransactionWorker {
       const end2 = Date.now();
       console.log(`Create transaction ${transactionHash} took ${end2 - start2} ms`);
       const startSaveToDb = new Date().getTime()
-      const res =  await this._transactionService.save(toSaveTransaction);
+      const res = await this._transactionService.save(toSaveTransaction);
       const end3 = Date.now();
       console.log(`Save transaction to db took ${end3 - startSaveToDb} ms`);
-      return  res;
+      return res;
     } catch (err: any) {
       if (maxRetries > 0) {
         logger.warn(
@@ -80,7 +80,8 @@ export default class SaveTransactionWorker {
   async saveData(message: string) {
     try {
       const start = Date.now();
-      const res = await this.saveTransaction(message);
+      //IMPORTANT: just save transaction hash
+      const res = await this.saveTransactionHash(message);
       const end = Date.now();
       console.log(`Total save transaction ${message} took ${end - start} ms`);
       if (res) {
@@ -98,5 +99,23 @@ export default class SaveTransactionWorker {
       null,
       this.saveData.bind(this)
     );
+  }
+
+  private async saveTransactionHash(message: string) {
+    try {
+      const toSaveTransaction = new Transaction();
+      toSaveTransaction.tx_hash = message;
+      toSaveTransaction.block_number = BigInt(-1);
+      toSaveTransaction.gasPrice = '-1';
+      toSaveTransaction.nonce = BigInt(-1);
+      toSaveTransaction.to = '0x';
+      toSaveTransaction.value = '0x';
+      toSaveTransaction.data = '0x';
+      toSaveTransaction.signature = '';
+      return await this._transactionService.save(toSaveTransaction);
+    } catch (err: any) {
+      logger.error(`Save txn failed for ${message} msg: ${err.message}`);
+      return null;
+    }
   }
 }
