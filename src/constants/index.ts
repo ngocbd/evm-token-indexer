@@ -210,11 +210,13 @@ export const LIST_AVAILABLE_WORKERS = {
   ClearDatabase: 'ClearData',
   SaveLogWorker: 'SaveLog',
   SaveTransactionWorker: 'SaveTransaction',
+  SaveTransferEventWorker: 'SaveTransfer',
 };
 
 export const EVENT_TRANSFER_QUEUE_NAME = 'evm-indexer-event-transfer';
 export const SAVE_LOG_QUEUE_NAME = 'evm-indexer-save-log';
 export const SAVE_DATA_QUEUE_NAME = 'evm-indexer-save-data';
+export const SAVE_TRANSFER_EVENT_QUEUE_NAME = 'evm-indexer-save-transfer_event';
 export const PUSH_EVENT_ERROR_QUEUE_NAME = 'evm-indexer-push-event-error';
 export const BLOCK_NUMBER_QUEUE_NAME = 'evm-indexer-block-number';
 export const SAVE_LOG_ERROR_QUEUE_NAME = 'evm-indexer-save-log-error';

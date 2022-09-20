@@ -4,7 +4,12 @@ import {
   TransactionService,
   TransferEventService,
 } from '../services';
-import {lastReadBlockRedisKey, SAVE_DATA_QUEUE_NAME, SAVE_TRANSACTION_QUEUE_NAME} from '../constants';
+import {
+  lastReadBlockRedisKey,
+  SAVE_DATA_QUEUE_NAME,
+  SAVE_LOG_ERROR_QUEUE_NAME,
+  SAVE_TRANSACTION_QUEUE_NAME, SAVE_TRANSFER_EVENT_QUEUE_NAME
+} from '../constants';
 import {TokenContract, Transaction, TransferEvent} from '../entity';
 import {convertFromHexToNumberString, deletePadZero, sleep} from '../utils';
 import {BigNumber, ethers, utils} from 'ethers';
@@ -175,30 +180,21 @@ export default class SaveDataWorker {
       let toSaveTxnHash = '';
       for (let i = 0; i < data.transferEvents.length; i++) {
         const transferEvent = data.transferEvents[i];
-        const savedTransferEvent = await this.saveTransferEvent(
+        const pushMsq = JSON.stringify({
           transferEvent,
-          data.tokenContract,
-        );
+          token: data.tokenContract,
+        })
+        await this._rabbitMqService.pushMessage(SAVE_TRANSFER_EVENT_QUEUE_NAME, pushMsq);
+        logger.info(`Pushed transfer event ${transferEvent.transactionHash} to save transfer event queue`);
+
 
         const currentEventTxnHash = transferEvent.transactionHash;
 
         //save transaction only when it is not saved yet
-        let savedTransaction: Transaction;
         if (currentEventTxnHash !== toSaveTxnHash) {
           toSaveTxnHash = currentEventTxnHash;
           await this._rabbitMqService.pushMessage(SAVE_TRANSACTION_QUEUE_NAME, toSaveTxnHash);
           logger.info(`Pushed transaction ${toSaveTxnHash} to save txn queue`);
-
-          /*IMPORTANT: At this time just save txn_hash to speed up sync progress*/
-          // savedTransaction = await this.saveTransactionHash(toSaveTxnHash);
-        }
-        if (savedTransaction) {
-          logger.info(`Saved transaction ${savedTransaction.tx_hash}`);
-        }
-        if (savedTransferEvent) {
-          logger.info(
-            `Saved transfer event ${savedTransferEvent.tx_hash} log_index: ${savedTransferEvent.log_index}`,
-          );
         }
       }
     } catch (err: any) {

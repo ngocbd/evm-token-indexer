@@ -7,7 +7,13 @@ import {ethers} from 'ethers';
 import {AppDataSource} from './data-source';
 //typeorm migration
 import 'reflect-metadata';
-import {FilterEventWorker, PushEventWorker, SaveDataWorker, SaveTransactionWorker} from './workers';
+import {
+  FilterEventWorker,
+  PushEventWorker,
+  SaveDataWorker,
+  SaveTransactionWorker,
+  SaveTransferEventWorker
+} from './workers';
 import logger from './logger';
 import SaveLogWorker from './workers/SaveLogWorker';
 import yargs from 'yargs';
@@ -41,9 +47,12 @@ const main = async () => {
       case LIST_AVAILABLE_WORKERS.SaveTransactionWorker:
         await new SaveTransactionWorker(provider).run();
         break;
-      case LIST_AVAILABLE_WORKERS.ClearDatabase:
+/*      case LIST_AVAILABLE_WORKERS.ClearDatabase:
         await new SaveDataWorker(provider).clearAllData();
         console.log('Clear all records in database and reset cached blocks');
+        break;*/
+      case LIST_AVAILABLE_WORKERS.SaveTransferEventWorker:
+        await new SaveTransferEventWorker(provider).run();
         break;
       case LIST_AVAILABLE_WORKERS.SaveLogWorker:
         await new SaveLogWorker(provider).run();
