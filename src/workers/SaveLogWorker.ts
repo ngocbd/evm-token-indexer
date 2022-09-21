@@ -59,7 +59,7 @@ export default class SaveLogWorker {
   async run() {
     await this._rabbitMqService.consumeMessage(
       SAVE_LOG_QUEUE_NAME,
-      500,
+      2000,
       this.saveLog.bind(this),
     );
   }

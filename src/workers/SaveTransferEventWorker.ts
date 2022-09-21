@@ -115,7 +115,7 @@ class SaveTransferEventWorker {
     // await this.clearAllData();
     await this._rabbitMqService.consumeMessage(
       SAVE_TRANSFER_EVENT_QUEUE_NAME,
-      500,
+      2000,
       this.saveData.bind(this),
     );
   }
