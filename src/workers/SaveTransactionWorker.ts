@@ -79,11 +79,8 @@ export default class SaveTransactionWorker {
 
   async saveData(message: string) {
     try {
-      const start = Date.now();
       //IMPORTANT: just save transaction hash
       const res = await this.saveTransactionHash(message);
-      const end = Date.now();
-      console.log(`Total save transaction ${message} took ${end - start} ms`);
       if (res) {
         logger.info(`Saved transaction ${message}`);
       }
@@ -101,7 +98,7 @@ export default class SaveTransactionWorker {
     );
   }
 
-  private async saveTransactionHash(message: string) {
+  async saveTransactionHash(message: string) {
     try {
       const toSaveTransaction = new Transaction();
       toSaveTransaction.tx_hash = message;
@@ -113,6 +110,7 @@ export default class SaveTransactionWorker {
       toSaveTransaction.data = '0x';
       toSaveTransaction.signature = '';
       return await this._transactionService.save(toSaveTransaction);
+
     } catch (err: any) {
       logger.error(`Save txn failed for ${message} msg: ${err.message}`);
       return null;

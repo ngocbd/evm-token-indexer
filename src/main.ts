@@ -32,6 +32,11 @@ const main = async () => {
   const isSaveLog = +argv.saveLog === 1;
 
   //TEST
+  const worker = new SaveTransactionWorker(provider);
+  const start = Date.now();
+  await worker.saveTransactionHash('0x8a2828106b5fd31a9acd27972d6c848aa075a6ddfcc8decf396ecda7929e910d');
+  const end = Date.now();
+  console.log('Time: ', end - start);
   if (workerName) {
     switch (workerName) {
       case LIST_AVAILABLE_WORKERS.SaveDataWorker:
@@ -47,10 +52,10 @@ const main = async () => {
       case LIST_AVAILABLE_WORKERS.SaveTransactionWorker:
         await new SaveTransactionWorker(provider).run();
         break;
-/*      case LIST_AVAILABLE_WORKERS.ClearDatabase:
-        await new SaveDataWorker(provider).clearAllData();
-        console.log('Clear all records in database and reset cached blocks');
-        break;*/
+      /*      case LIST_AVAILABLE_WORKERS.ClearDatabase:
+              await new SaveDataWorker(provider).clearAllData();
+              console.log('Clear all records in database and reset cached blocks');
+              break;*/
       case LIST_AVAILABLE_WORKERS.SaveTransferEventWorker:
         await new SaveTransferEventWorker(provider).run();
         break;
