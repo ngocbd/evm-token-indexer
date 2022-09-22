@@ -217,7 +217,7 @@ export default class FilterEventWorker {
   async run() {
     await this._rabbitMqService.consumeMessage(
       EVENT_TRANSFER_QUEUE_NAME,
-      undefined,
+      2000,
       this.filterEventTransfer.bind(this),
     );
   }
