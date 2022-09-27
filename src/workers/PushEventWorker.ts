@@ -119,7 +119,7 @@ export default class PushEventWorker {
         if (!transferEventLogs) {
           continue;
         }
-        console.log(
+        logger.info(
           `blocks ${fromBlock} => ${toBlock} transfer event count:  ${transferEventLogs.length}`,
         );
 
@@ -147,7 +147,7 @@ export default class PushEventWorker {
             message,
           );
           logger.info(
-            `Push ${events.length} events of token ${events[0].address} to queue`,
+            `blocks ${fromBlock} => ${toBlock}: Push ${events.length} events of token ${events[0].address} to queue`,
           );
 
           if (isSaveLogs) {
@@ -160,7 +160,7 @@ export default class PushEventWorker {
               SAVE_LOG_QUEUE_NAME,
               logQueueMsg,
             );
-            logger.info(`Push ${logQueueMsg} to log queue`);
+            logger.info(`blocks ${fromBlock} => ${toBlock}: Push ${logQueueMsg} to log queue`);
           }
         }
         transferEventsMap.clear();
@@ -168,7 +168,7 @@ export default class PushEventWorker {
 
       }
     } catch (err: any) {
-      logger.error('Push event error: ' + err);
+      logger.error('blocks ${fromBlock} => ${toBlock} Push event error: ' + err);
     }
   }
 
