@@ -103,9 +103,8 @@ export default class PushEventWorker {
       }
 
     } catch (err: any) {
-
+      logger.error('blocks ${fromBlock} => ${toBlock} Push event error: ' + err);
     }
-    console.log(`Push event from block ${fromBlock} to ${toBlock} done`);
   }
 
   async getLogsThenPushToQueue(fromBlock, toBlock, isSaveLogs) {
@@ -193,6 +192,26 @@ export default class PushEventWorker {
       }
     } catch (err: any) {
       logger.error('blocks ${fromBlock} => ${toBlock} Push event error: ' + err);
+    }
+  }
+
+  pushEventRealTime(isSaveLogs = false) {
+    try {
+      let count = 0;
+      let blockLength = 5;
+      let toBlock = 0;
+      this._provider.on('block', async (blockNumber) => {
+        logger.info(`New block ${blockNumber} detected`);
+        toBlock = blockNumber;
+        count ++;
+        if(count === blockLength) {
+          await this.getLogsThenPushToQueue(toBlock - blockLength, toBlock, isSaveLogs);
+          count = 0;
+        }
+      });
+
+    }catch (err: any) {
+      logger.error('Push event error: ' + err);
     }
   }
 

@@ -30,8 +30,8 @@ const main = async () => {
 
   const workerName = argv.worker;
   const isSaveLog = +argv.saveLog === 1;
-  const pushWorker = new PushEventWorker(provider);
-  await pushWorker.pushEventInABlockRange(100, 450, false);
+  // const pushWorker = new PushEventWorker(provider);
+  // await pushWorker.pushEventRealTime();
   //TEST
   if (workerName) {
     switch (workerName) {
