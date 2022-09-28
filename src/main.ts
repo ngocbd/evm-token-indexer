@@ -30,8 +30,8 @@ const main = async () => {
 
   const workerName = argv.worker;
   const isSaveLog = +argv.saveLog === 1;
-  console.log('ok')
-  //TEST
+
+
   if (workerName) {
     switch (workerName) {
       case LIST_AVAILABLE_WORKERS.SaveDataWorker:
