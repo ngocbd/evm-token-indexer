@@ -50,7 +50,7 @@ export default class PushEventWorker {
       const erc1155TransferBatchTopic = utils.id(
         'TransferBatch(address,address,address,uint256[],uint256[])',
       );
-
+      const startFilter = Date.now();
       const transferEventLogs = await this._provider.getLogs({
         fromBlock,
         toBlock,
@@ -62,6 +62,8 @@ export default class PushEventWorker {
           ],
         ],
       });
+      const endFilter = Date.now();
+      logger.info(`blocks ${fromBlock} => ${toBlock}: Filter events cost ${endFilter - startFilter} ms`);
       return transferEventLogs;
     } catch (err: any) {
       if (retries > 0) {
@@ -166,7 +168,7 @@ export default class PushEventWorker {
   }
 
   async pushEventTransfer(isSaveLogs: boolean) {
-    const blockLength = 50;
+    const blockLength = 100;
     try {
 
       const currentChainBlockNumber = await this._provider.getBlockNumber();
@@ -203,14 +205,14 @@ export default class PushEventWorker {
       this._provider.on('block', async (blockNumber) => {
         logger.info(`New block ${blockNumber} detected`);
         toBlock = blockNumber;
-        count ++;
-        if(count === blockLength) {
+        count++;
+        if (count === blockLength) {
           await this.getLogsThenPushToQueue(toBlock - blockLength, toBlock, isSaveLogs);
           count = 0;
         }
       });
 
-    }catch (err: any) {
+    } catch (err: any) {
       logger.error('Push event error: ' + err);
     }
   }
