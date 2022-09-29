@@ -168,7 +168,7 @@ export default class PushEventWorker {
   }
 
   async pushEventTransfer(isSaveLogs: boolean) {
-    const blockLength = 100;
+    const blockLength = 50;
     try {
 
       const currentChainBlockNumber = await this._provider.getBlockNumber();
