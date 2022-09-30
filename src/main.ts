@@ -32,7 +32,7 @@ const main = async () => {
   const isSaveLog = +argv.saveLog === 1;
 
   // const worker = new PushEventWorker(provider);
-  // await worker.pushEventInABlockRange(6501543, 6501593, false)
+  // await worker.pushEventInABlockRange(8945943, 8945943 + 25, false)
   if (workerName) {
     switch (workerName) {
       case LIST_AVAILABLE_WORKERS.SaveDataWorker:
