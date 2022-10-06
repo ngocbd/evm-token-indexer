@@ -216,7 +216,7 @@ export default class SaveDataWorker {
     // await this.clearAllData();
     await this._rabbitMqService.consumeMessage(
       SAVE_DATA_QUEUE_NAME,
-      500,
+      2_000,
       this.saveData.bind(this),
     );
   }
