@@ -69,7 +69,7 @@ class SaveTransferEventWorker {
               const toSaveCopy = {...toSaveTransferEvent};
               toSaveCopy.token_id = id;
               toSaveCopy.amount = amount;
-              res = await this._transferEventService.save(toSaveCopy);
+              res = await this._transferEventService.save(toSaveCopy, true);
             }
             return res;
           } else {
