@@ -40,6 +40,11 @@ services:
     volumes:
       - save_log_worker_log:/app/logs
     command: SaveLog
+  delete_duplicate:
+    build: .
+    container_name: delete_duplicate_worker
+    image: lilhuy0405/4bytes-evm-token-indexer
+    command: DeleteDuplicate
 
   save_transaction:
     build: .

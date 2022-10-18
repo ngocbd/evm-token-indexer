@@ -13,6 +13,7 @@ export default class TransactionService {
     return await this.transactionRepository.save(transaction);
   }
 
+
   async deleteAll() {
     return await this.transactionRepository.clear();
   }

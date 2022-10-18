@@ -211,6 +211,8 @@ export const LIST_AVAILABLE_WORKERS = {
   SaveLogWorker: 'SaveLog',
   SaveTransactionWorker: 'SaveTransaction',
   SaveTransferEventWorker: 'SaveTransfer',
+  PushDeletePageWorker: 'PushDeletePage',
+  DeleteDuplicateWorker: 'DeleteDuplicate',
 };
 
 export const EVENT_TRANSFER_QUEUE_NAME = 'evm-indexer-event-transfer';
@@ -221,4 +223,5 @@ export const PUSH_EVENT_ERROR_QUEUE_NAME = 'evm-indexer-push-event-error';
 export const BLOCK_NUMBER_QUEUE_NAME = 'evm-indexer-block-number';
 export const SAVE_LOG_ERROR_QUEUE_NAME = 'evm-indexer-save-log-error';
 export const SAVE_TRANSACTION_QUEUE_NAME= 'evm-indexer-save-transaction';
+export const DELETE_DUPLICATE_QUEUE_NAME = 'evm-indexer-delete-duplicate';
 export const lastReadBlockRedisKey = 'evm-push-event-worker-last-read-block';

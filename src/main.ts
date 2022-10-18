@@ -20,6 +20,8 @@ import yargs from 'yargs';
 import {hideBin} from 'yargs/helpers';
 import {RabbitMqService} from "./services";
 import {sleep} from "./utils";
+import PushDeletePageWorker from "./workers/PushDeletePageWorker";
+import DeleteDuplicateWorker from "./workers/DeleteDuplicateWorker";
 
 
 const main = async () => {
@@ -46,6 +48,14 @@ const main = async () => {
       case LIST_AVAILABLE_WORKERS.PushEventWorker:
         const pushEventWorker = new PushEventWorker(provider);
         await pushEventWorker.run(isSaveLog);
+        break;
+      case LIST_AVAILABLE_WORKERS.PushDeletePageWorker:
+        const pushDeletePageWorker = new PushDeletePageWorker();
+        await pushDeletePageWorker.run();
+        break;
+      case LIST_AVAILABLE_WORKERS.DeleteDuplicateWorker:
+        const deleteDuplicate = new DeleteDuplicateWorker();
+        await deleteDuplicate.run();
         break;
       case LIST_AVAILABLE_WORKERS.SaveTransactionWorker:
         await new SaveTransactionWorker(provider).run();
