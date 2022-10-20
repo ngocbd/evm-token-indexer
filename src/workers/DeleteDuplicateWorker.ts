@@ -12,20 +12,21 @@ export default class DeleteDuplicateWorker {
     this._transferEventService = new TransferEventService()
   }
 
+
   async deleteDuplicate(message: string) {
     try {
       const data: { startOffset: number, deletePerPage: number } = JSON.parse(message);
       const {startOffset, deletePerPage} = data;
-      const startQuery = new Date().getTime()
-      const res = await this._transferEventService.getTransferEventPagination(deletePerPage, startOffset);
-      const endQuery = new Date().getTime()
-      logger.info(`limit: ${deletePerPage} offset: ${startOffset} query take ${endQuery - startQuery} ms`)
+      const startQuery = new Date().getTime();
+      const res = await this._transferEventService.getTransferEventBetween(startOffset, startOffset + deletePerPage);
+      const endQuery = new Date().getTime();
+      logger.info(`id from: ${startOffset} to ${startOffset + deletePerPage} took ${endQuery - startQuery} ms return ${res.length} rows`);
       if (res.length === 0) {
-        logger.info(`No data found at limit: ${deletePerPage} offset: ${startOffset}`)
+        logger.info("query is empty return");
         return;
       }
 
-      const deleteStart = new Date().getTime()
+      const deleteStart = new Date().getTime();
       const transferEventsMap = new Map<string, TransferEvent[]>();
       res.forEach((item) => {
         const mapKey = item.tx_hash.concat("_").concat(item.log_index.toString());
@@ -41,18 +42,18 @@ export default class DeleteDuplicateWorker {
       for (const key of transferEventsMap.keys()) {
         const events = transferEventsMap.get(key);
         if (events.length > 1) {
-          logger.info(`Found duplicated at ${key} with length ${events.length}`)
+          logger.info(`id from: ${startOffset} to ${startOffset + deletePerPage} Found duplicated at ${key} with length ${events.length}`);
           const copiedEvents = [...events];
           copiedEvents.shift();
           await this._transferEventService.remove(copiedEvents);
           for (let i = 0; i < copiedEvents.length; i++) {
-            logger.info(`Deleted success: ${copiedEvents[i]}`)
+            logger.info(`id from: ${startOffset} to ${startOffset + deletePerPage} Deleted success: ${copiedEvents[i].tx_hash} ${copiedEvents[i].log_index}`);
           }
         }
       }
-      const deleteEnd = new Date().getTime()
-      logger.info(`limit: ${deletePerPage} offset: ${startOffset} delete took ${deleteEnd - deleteStart} ms`)
-
+      const deleteEnd = new Date().getTime();
+      logger.info(`id from: ${startOffset} to ${startOffset + deletePerPage} delete took ${deleteEnd - deleteStart} ms`);
+      transferEventsMap.clear();
     } catch (err: any) {
       logger.error(err);
       return null;

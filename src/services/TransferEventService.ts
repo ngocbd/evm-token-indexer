@@ -8,12 +8,26 @@ import logger from "../logger";
 export default class TransferEventService {
   private readonly transferEventRepository: Repository<TransferEvent>;
   private readonly _tableName: string;
+  private static _queryRunner: any = null;
 
   constructor() {
     this.transferEventRepository = AppDataSource.getRepository(TransferEvent);
     this._tableName = 'transfer_events';
   }
-
+  async getTransferEventBetween(start, end): Promise<TransferEvent[]> {
+    let queryRunner = TransferEventService._queryRunner;
+    if (!queryRunner) {
+      console.log('create query runner');
+      TransferEventService._queryRunner = AppDataSource.createQueryRunner();
+      queryRunner = TransferEventService._queryRunner;
+    }
+    const result: TransferEvent[] = await queryRunner.manager.query(
+      `SELECT * FROM ${DATABASE_SCHEMA}.${this._tableName} 
+                WHERE token_type != '${TokenType.ERC1155}'
+                AND id >= ${start} AND id < ${end}`
+    );
+    return result;
+  }
   async save(transferEvent: TransferEvent, isERC1155BatchTransfer = false): Promise<TransferEvent> {
 
     if(!isERC1155BatchTransfer) {
