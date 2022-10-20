@@ -64,7 +64,7 @@ export default class DeleteDuplicateWorker {
     // await this.clearAllData();
     await this._rabbitMqService.consumeMessage(
       DELETE_DUPLICATE_QUEUE_NAME,
-      10,
+      1,
       this.deleteDuplicate.bind(this)
     );
   }
