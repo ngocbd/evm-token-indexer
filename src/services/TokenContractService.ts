@@ -1,8 +1,9 @@
-import { Repository } from 'typeorm';
-import { AppDataSource } from '../data-source';
-import { TokenContract } from '../entity';
-import { DATABASE_SCHEMA } from '../constants';
+import {Repository} from 'typeorm';
+import {AppDataSource} from '../data-source';
+import {TokenContract} from '../entity';
+import {DATABASE_SCHEMA} from '../constants';
 import logger from '../logger';
+import tokenType from "../enums/TokenType";
 
 export default class TokenContractService {
   private readonly tokenContractRepository: Repository<TokenContract>;
@@ -35,6 +36,14 @@ export default class TokenContractService {
     return await this.tokenContractRepository.find();
   }
 
+  async findAllErc20(): Promise<TokenContract[]> {
+    return await this.tokenContractRepository.find({
+      where: {
+        type: tokenType.ERC20,
+      },
+    });
+  }
+
   async getLatestBlockInDb(): Promise<number> {
     try {
       const queryRunner = await AppDataSource.createQueryRunner();
@@ -51,7 +60,7 @@ export default class TokenContractService {
   async findByAddress(address: string): Promise<TokenContract> {
     try {
       return await this.tokenContractRepository.findOne({
-        where: { address },
+        where: {address},
       });
     } catch (err) {
       console.log(err);

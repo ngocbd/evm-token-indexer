@@ -8,6 +8,7 @@ import {AppDataSource} from './data-source';
 //typeorm migration
 import 'reflect-metadata';
 import {
+  CrawlTokenHolder,
   FilterEventWorker,
   PushEventWorker,
   SaveDataWorker,
@@ -32,11 +33,9 @@ const main = async () => {
 
   const workerName = argv.worker;
   const isSaveLog = +argv.saveLog === 1;
-  // 8946718 => 8946743
-  // 11185957 => 11186057
-  // const worker = new PushEventWorker(provider);
-  // await worker.pushEventInABlockRange(11185957, 11186057, false);
-  // await worker.pushEventRealTime(false)
+  const address  = "0xdac17f958d2ee523a2206206994597c13d831ec7"
+  const crawler = new CrawlTokenHolder(provider)
+  await crawler.crawlTokenHolder(address)
   if (workerName) {
     switch (workerName) {
       case LIST_AVAILABLE_WORKERS.SaveDataWorker:

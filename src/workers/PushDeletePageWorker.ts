@@ -16,11 +16,11 @@ export default class PushDeletePageWorker {
 
   async pushPage() {
     const deletePerPage = 1_000_000;
-    let startOffset = 430_900_000;
+    let startOffset = 447_900_000;
     const endOffset = 1_240_000_000;
     while (startOffset < endOffset) {
       startOffset += deletePerPage
-      if(startOffset > endOffset) {
+      if (startOffset > endOffset) {
         startOffset = endOffset
       }
       const message = JSON.stringify({startOffset, deletePerPage})

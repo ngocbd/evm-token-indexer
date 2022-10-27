@@ -25,7 +25,9 @@
    },
    "homepage": "https://github.com/4bytes-io/evm-token-indexer#readme",
    "devDependencies": {
+      "@types/jsdom": "^20.0.0",
       "@types/node": "^16.11.10",
+      "@types/node-fetch": "^2.6.2",
       "@typescript-eslint/eslint-plugin": "^5.33.0",
       "@typescript-eslint/parser": "^5.33.0",
       "eslint": "^8.21.0",
@@ -40,6 +42,8 @@
       "dotenv": "^16.0.1",
       "ethereum-input-data-decoder": "^0.4.2",
       "ethers": "^5.6.9",
+      "jsdom": "^20.0.1",
+      "node-fetch": "^2.6.6",
       "pg": "^8.4.0",
       "prettier": "^2.7.1",
       "redis": "^4.3.0",
