@@ -4,3 +4,4 @@ export { default as SaveDataWorker } from './SaveDataWorker';
 export { default as SaveTransactionWorker } from './SaveTransactionWorker';
 export { default as SaveTransferEventWorker } from './SaveTransferEventWorker';
 export { default as CrawlTokenHolder } from './CrawlTokenHolder';
+export { default as PushTokenForCrawler } from './PushTokenForCrawler';

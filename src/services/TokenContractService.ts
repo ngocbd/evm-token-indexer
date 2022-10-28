@@ -36,12 +36,9 @@ export default class TokenContractService {
     return await this.tokenContractRepository.find();
   }
 
-  async findAllErc20(): Promise<TokenContract[]> {
-    return await this.tokenContractRepository.find({
-      where: {
-        type: tokenType.ERC20,
-      },
-    });
+  async findAllValidErc20(): Promise<string[]> {
+    const res = await this.tokenContractRepository.query(`SELECT address FROM ${DATABASE_SCHEMA}.token_contracts WHERE type = ${tokenType.ERC20} AND validated = 1`);
+    return res.map((item: any) => item.address);
   }
 
   async getLatestBlockInDb(): Promise<number> {

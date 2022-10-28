@@ -213,6 +213,8 @@ export const LIST_AVAILABLE_WORKERS = {
   SaveTransferEventWorker: 'SaveTransfer',
   PushDeletePageWorker: 'PushDeletePage',
   DeleteDuplicateWorker: 'DeleteDuplicate',
+  CrawlTokenHolderWorker: 'CrawlTokenHolder',
+  PushTokenForCrawlerWorker: 'PushTokenForCrawler',
 };
 
 export const EVENT_TRANSFER_QUEUE_NAME = 'evm-indexer-event-transfer';

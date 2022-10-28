@@ -62,6 +62,18 @@ services:
       - save_transfer_worker_log:/app/logs
     command: SaveTransfer
 
+  push_token_for_crawler:
+    build: .
+    container_name: push_token_for_crawler_worker
+    image: lilhuy0405/4bytes-evm-token-indexer
+    command: PushTokenForCrawler
+
+  crawl_token_holder:
+    build: .
+    container_name: crawl_token_holder_worker
+    image: lilhuy0405/4bytes-evm-token-indexer
+    command: CrawlTokenHolder
+
 #Volume mounting for saving logs files
 volumes:
   push_event_worker_log:

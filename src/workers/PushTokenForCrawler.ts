@@ -3,7 +3,7 @@ import {CRAWL_TOKEN_HOLDER_QUEUE_NAME, DELETE_DUPLICATE_QUEUE_NAME} from "../con
 import logger from "../logger";
 import {sleep} from "../utils";
 
-class PushTokenForCrawler {
+export default class PushTokenForCrawler {
   _rabbitMqService: RabbitMqService;
   _tokenContractService: TokenContractService;
 
@@ -13,9 +13,10 @@ class PushTokenForCrawler {
   }
 
   async pushToken() {
-    const tokens = await this._tokenContractService.findAllErc20();
+    const tokens = await this._tokenContractService.findAllValidErc20();
+    logger.info(`Push ${tokens.length} tokens to queue ${CRAWL_TOKEN_HOLDER_QUEUE_NAME}`);
     for (const token of tokens) {
-      const message = token.address;
+      const message = token;
       await this._rabbitMqService.pushMessage(CRAWL_TOKEN_HOLDER_QUEUE_NAME, message);
       logger.info(`Pushed message ${message}`);
     }

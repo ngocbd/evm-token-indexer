@@ -13,6 +13,6 @@ export default class TokenBalance {
   @PrimaryColumn()
   token_id: string;
 
-  @Column('bigint')
-  balance: bigint;
+  @Column()
+  balance: string;
 }

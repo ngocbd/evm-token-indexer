@@ -10,7 +10,7 @@ import 'reflect-metadata';
 import {
   CrawlTokenHolder,
   FilterEventWorker,
-  PushEventWorker,
+  PushEventWorker, PushTokenForCrawler,
   SaveDataWorker,
   SaveTransactionWorker,
   SaveTransferEventWorker
@@ -19,7 +19,7 @@ import logger from './logger';
 import SaveLogWorker from './workers/SaveLogWorker';
 import yargs from 'yargs';
 import {hideBin} from 'yargs/helpers';
-import {RabbitMqService} from "./services";
+import {RabbitMqService, TokenContractService} from "./services";
 import {sleep} from "./utils";
 import PushDeletePageWorker from "./workers/PushDeletePageWorker";
 import DeleteDuplicateWorker from "./workers/DeleteDuplicateWorker";
@@ -33,9 +33,8 @@ const main = async () => {
 
   const workerName = argv.worker;
   const isSaveLog = +argv.saveLog === 1;
-  const address  = "0xdac17f958d2ee523a2206206994597c13d831ec7"
-  const crawler = new CrawlTokenHolder(provider)
-  await crawler.crawlTokenHolder(address)
+
+
   if (workerName) {
     switch (workerName) {
       case LIST_AVAILABLE_WORKERS.SaveDataWorker:
@@ -59,12 +58,16 @@ const main = async () => {
       case LIST_AVAILABLE_WORKERS.SaveTransactionWorker:
         await new SaveTransactionWorker(provider).run();
         break;
-      /*      case LIST_AVAILABLE_WORKERS.ClearDatabase:
-              await new SaveDataWorker(provider).clearAllData();
-              console.log('Clear all records in database and reset cached blocks');
-              break;*/
       case LIST_AVAILABLE_WORKERS.SaveTransferEventWorker:
         await new SaveTransferEventWorker(provider).run();
+        break;
+      case LIST_AVAILABLE_WORKERS.PushTokenForCrawlerWorker:
+        const pushTokenForCrawlerWorker = new PushTokenForCrawler();
+        await pushTokenForCrawlerWorker.run();
+        break;
+      case LIST_AVAILABLE_WORKERS.CrawlTokenHolderWorker:
+        const crawlTokenHolderWorker = new CrawlTokenHolder(provider);
+        await crawlTokenHolderWorker.run();
         break;
       case LIST_AVAILABLE_WORKERS.SaveLogWorker:
         await new SaveLogWorker(provider).run();
