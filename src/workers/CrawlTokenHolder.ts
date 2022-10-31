@@ -27,8 +27,13 @@ export default class CrawlTokenHolder {
   //implement retries logic
   private async getWebsiteContent(url: string, retries = 3): Promise<string> {
     try {
+      const headers = {
+        "user-agent":" Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36"
+      }
       // Simple HTTP call
-      const response = await fetch(url);
+      const response = await fetch(url, {
+        headers
+      });
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }

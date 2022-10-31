@@ -28,6 +28,20 @@ export default class TransferEventService {
     );
     return result;
   }
+  async getERC20TransferEventsBetween(start, end): Promise<TransferEvent[]> {
+    let queryRunner = TransferEventService._queryRunner;
+    if (!queryRunner) {
+      console.log('create query runner');
+      TransferEventService._queryRunner = AppDataSource.createQueryRunner();
+      queryRunner = TransferEventService._queryRunner;
+    }
+    const result: TransferEvent[] = await queryRunner.manager.query(
+      `SELECT * FROM ${DATABASE_SCHEMA}.${this._tableName} 
+               WHERE id >= ${start} AND id < ${end} 
+               AND token_type = '${TokenType.ERC20}'`
+    );
+    return result;
+  }
   async save(transferEvent: TransferEvent, isERC1155BatchTransfer = false): Promise<TransferEvent> {
 
     if(!isERC1155BatchTransfer) {
