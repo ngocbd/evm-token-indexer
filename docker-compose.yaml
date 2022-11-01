@@ -76,7 +76,7 @@ services:
 
   push_transfer_id:
     build: .
-    container_name: crawl_token_holder_worker
+    container_name: push_transfer_id_worker
     image: lilhuy0405/4bytes-evm-token-indexer
     command: PushTransferID
 
