@@ -215,6 +215,8 @@ export const LIST_AVAILABLE_WORKERS = {
   DeleteDuplicateWorker: 'DeleteDuplicate',
   CrawlTokenHolderWorker: 'CrawlTokenHolder',
   PushTokenForCrawlerWorker: 'PushTokenForCrawler',
+  PushTransferIDWorker: 'PushTransferID',
+  TokenBalanceWorker: 'TokenBalance',
 };
 
 export const EVENT_TRANSFER_QUEUE_NAME = 'evm-indexer-event-transfer';
@@ -227,4 +229,5 @@ export const SAVE_LOG_ERROR_QUEUE_NAME = 'evm-indexer-save-log-error';
 export const SAVE_TRANSACTION_QUEUE_NAME= 'evm-indexer-save-transaction';
 export const DELETE_DUPLICATE_QUEUE_NAME = 'evm-indexer-delete-duplicate';
 export const CRAWL_TOKEN_HOLDER_QUEUE_NAME = 'evm-indexer-crawl-token-holder';
+export const TOKEN_BALANCE_QUEUE_NAME = 'evm-indexer-token-balance';
 export const lastReadBlockRedisKey = 'evm-push-event-worker-last-read-block';

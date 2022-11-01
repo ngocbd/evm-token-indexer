@@ -10,10 +10,10 @@ import 'reflect-metadata';
 import {
   CrawlTokenHolder,
   FilterEventWorker,
-  PushEventWorker, PushTokenForCrawler,
+  PushEventWorker, PushTokenForCrawler, PushTransferIDWorker,
   SaveDataWorker,
   SaveTransactionWorker,
-  SaveTransferEventWorker
+  SaveTransferEventWorker, TokenBalanceWorker
 } from './workers';
 import logger from './logger';
 import SaveLogWorker from './workers/SaveLogWorker';
@@ -68,6 +68,14 @@ const main = async () => {
       case LIST_AVAILABLE_WORKERS.CrawlTokenHolderWorker:
         const crawlTokenHolderWorker = new CrawlTokenHolder(provider);
         await crawlTokenHolderWorker.run();
+        break;
+      case LIST_AVAILABLE_WORKERS.PushTransferIDWorker:
+        const pushTransferIDWorker = new PushTransferIDWorker();
+        await pushTransferIDWorker.run();
+        break;
+      case LIST_AVAILABLE_WORKERS.TokenBalanceWorker:
+        const tokenBalanceWorker = new TokenBalanceWorker();
+        await tokenBalanceWorker.run();
         break;
       case LIST_AVAILABLE_WORKERS.SaveLogWorker:
         await new SaveLogWorker(provider).run();
