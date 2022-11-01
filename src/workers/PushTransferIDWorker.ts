@@ -11,7 +11,7 @@ export default class PushTransferIDWorker {
   }
 
   async pushId() {
-    const size = 1_000_000;
+    const size = 100_000;
     let start = 0;
     const end = 1_240_000_000;
     while (start < end) {
