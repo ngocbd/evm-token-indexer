@@ -13,7 +13,7 @@ import {
   PushEventWorker, PushTokenForCrawler, PushTransferIDWorker,
   SaveDataWorker,
   SaveTransactionWorker,
-  SaveTransferEventWorker, TokenBalanceWorker
+  SaveTransferEventWorker, TokenBalanceWorker, UpdateTotalSupplyWorker
 } from './workers';
 import logger from './logger';
 import SaveLogWorker from './workers/SaveLogWorker';
@@ -79,6 +79,10 @@ const main = async () => {
         break;
       case LIST_AVAILABLE_WORKERS.SaveLogWorker:
         await new SaveLogWorker(provider).run();
+        break;
+      case LIST_AVAILABLE_WORKERS.UpdateTotalSupplyWorker:
+        const updateTokenSupplyWorker = new UpdateTotalSupplyWorker(provider);
+        await updateTokenSupplyWorker.run();
         break;
       case 'list-workers':
         console.log('Available workers: ');

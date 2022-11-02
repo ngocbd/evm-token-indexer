@@ -217,6 +217,7 @@ export const LIST_AVAILABLE_WORKERS = {
   PushTokenForCrawlerWorker: 'PushTokenForCrawler',
   PushTransferIDWorker: 'PushTransferID',
   TokenBalanceWorker: 'TokenBalance',
+  UpdateTotalSupplyWorker: 'UpdateTotalSupply',
 };
 
 export const EVENT_TRANSFER_QUEUE_NAME = 'evm-indexer-event-transfer';

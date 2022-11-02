@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryColumn } from 'typeorm';
+import {Entity, Column, PrimaryColumn} from 'typeorm';
 import TokenType from '../enums/TokenType';
 
 @Entity('token_contracts')
@@ -43,4 +43,9 @@ export default class TokenContract {
 
   @Column()
   validated: number;
+
+  @Column({
+    nullable: true,
+  })
+  total_supply: string;
 }

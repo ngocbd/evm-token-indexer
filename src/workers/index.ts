@@ -7,3 +7,4 @@ export {default as CrawlTokenHolder} from './CrawlTokenHolder';
 export {default as PushTokenForCrawler} from './PushTokenForCrawler';
 export {default as TokenBalanceWorker} from './TokenBalanceWorker';
 export {default as PushTransferIDWorker} from './PushTransferIDWorker';
+export {default as UpdateTotalSupplyWorker} from './UpdateTotalSupplyWorker';

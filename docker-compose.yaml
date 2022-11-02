@@ -86,6 +86,12 @@ services:
     image: lilhuy0405/4bytes-evm-token-indexer
     command: TokenBalance
 
+  update_token_supply:
+    build: .
+    container_name: update_token_supply_worker
+    image: lilhuy0405/4bytes-evm-token-indexer
+    command: UpdateTotalSupply
+
 #Volume mounting for saving logs files
 volumes:
   push_event_worker_log:
