@@ -38,6 +38,7 @@ export default class UpdateTotalSupplyWorker {
         if (!totalSupply) {
           continue;
         }
+        console.log(totalSupply)
         token.total_supply = totalSupply;
         const updated = await this._tokenContractService.update(token);
         logger.info(`Updated token ${updated.address} total supply ${updated.total_supply}`);

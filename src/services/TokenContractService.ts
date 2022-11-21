@@ -54,6 +54,15 @@ export default class TokenContractService {
     });
   }
 
+  async findAllValidatedERC721Token(): Promise<TokenContract[]> {
+    return await this.tokenContractRepository.find({
+      where: {
+        type: tokenType.ERC721,
+        validated: 1,
+      },
+    });
+  }
+
   async getLatestBlockInDb(): Promise<number> {
     try {
       const queryRunner = await AppDataSource.createQueryRunner();
