@@ -30,7 +30,7 @@ export default class UpdateTotalSupplyWorker {
   async run() {
     logger.info('UpdateTotalSupplyWorker started');
     const startTime = Date.now();
-    const tokens = await this._tokenContractService.findAllValidatedERC20Token();
+    const tokens = await this._tokenContractService.findAllValidatedERC721Token();
 
     for (const token of tokens) {
       try {
