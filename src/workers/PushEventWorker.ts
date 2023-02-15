@@ -1,14 +1,20 @@
-import {ethers, utils} from 'ethers';
+import { ethers, utils } from 'ethers';
 import {
   EVENT_TRANSFER_QUEUE_NAME,
-  lastReadBlockRedisKey,
   PUSH_EVENT_ERROR_QUEUE_NAME,
   SAVE_LOG_QUEUE_NAME,
+  SYNC_BLOCKS_RANGE,
 } from '../constants';
 import logger from '../logger';
-import {RabbitMqService, TransferEventService} from '../services';
+import {
+  CounterService,
+  IndexerConfigService,
+  RabbitMqService,
+  TransferEventService,
+} from '../services';
 import RedisService from '../services/RedisService';
-import {sleep} from "../utils";
+import { sleep } from '../utils';
+import CounterName from '../enums/CounterName';
 
 export default class PushEventWorker {
   _provider: ethers.providers.JsonRpcProvider;
@@ -16,24 +22,29 @@ export default class PushEventWorker {
   _transferEventService: TransferEventService;
   _firstRecognizedTokenBlock: number;
   _redisService: RedisService;
+  _counterService: CounterService;
+  _indexerConfService: IndexerConfigService;
 
   constructor(provider: ethers.providers.JsonRpcProvider) {
     this._provider = provider;
     this._rabbitMqService = new RabbitMqService();
-    this._firstRecognizedTokenBlock = 980_743;
-    // this._firstRecognizedTokenBlock = 14481371 ;
+    // this._firstRecognizedTokenBlock = 980_743;
+    this._firstRecognizedTokenBlock = 14481371;
     this._redisService = new RedisService();
     this._transferEventService = new TransferEventService();
+    this._counterService = new CounterService();
+    this._indexerConfService = new IndexerConfigService();
   }
 
   /*
    * Detect start block
-   * if cached exist use cached block number
-   * else if latest block in db > first recognized block use block in db
+   * if block number in db > first recognized block use it
    * else use first recognized block
    * */
   private async _detectStartBlock(): Promise<number> {
-    const inDbBlock = await this._transferEventService.getHighestBlock();
+    const inDbBlock = await this._counterService.getCounter(
+      CounterName.BLOCK_NUMBER,
+    );
     return inDbBlock > this._firstRecognizedTokenBlock
       ? inDbBlock
       : this._firstRecognizedTokenBlock;
@@ -63,7 +74,11 @@ export default class PushEventWorker {
         ],
       });
       const endFilter = Date.now();
-      logger.info(`blocks ${fromBlock} => ${toBlock}: Filter events cost ${endFilter - startFilter} ms`);
+      logger.info(
+        `blocks ${fromBlock} => ${toBlock}: Filter events cost ${
+          endFilter - startFilter
+        } ms`,
+      );
       return transferEventLogs;
     } catch (err: any) {
       if (retries > 0) {
@@ -93,7 +108,6 @@ export default class PushEventWorker {
   async pushEventInABlockRange(fromBlock, toBlock, isSaveLogs: boolean) {
     const blockLength = 100;
     try {
-
       for (let i = fromBlock; i <= toBlock; i += blockLength) {
         let startBlock = i;
         let endBlock = i + blockLength;
@@ -103,18 +117,16 @@ export default class PushEventWorker {
         console.log(`Start push event from block ${startBlock} to ${endBlock}`);
         await this.getLogsThenPushToQueue(startBlock, endBlock, isSaveLogs);
       }
-
     } catch (err: any) {
-      logger.error('blocks ${fromBlock} => ${toBlock} Push event error: ' + err);
+      logger.error(
+        'blocks ${fromBlock} => ${toBlock} Push event error: ' + err,
+      );
     }
   }
 
   async getLogsThenPushToQueue(fromBlock, toBlock, isSaveLogs) {
     const startTime = Date.now();
-    const transferEventLogs = await this.getTransferLogs(
-      fromBlock,
-      toBlock,
-    );
+    const transferEventLogs = await this.getTransferLogs(fromBlock, toBlock);
     if (!transferEventLogs) {
       return;
     }
@@ -159,41 +171,55 @@ export default class PushEventWorker {
           SAVE_LOG_QUEUE_NAME,
           logQueueMsg,
         );
-        logger.info(`blocks ${fromBlock} => ${toBlock}: Push ${logQueueMsg} to log queue`);
+        logger.info(
+          `blocks ${fromBlock} => ${toBlock}: Push ${logQueueMsg} to log queue`,
+        );
       }
     }
     // transferEventsMap.clear();
     const endTime = Date.now();
-    logger.info(`blocks ${fromBlock} => ${toBlock}: Push events to queue done, cost ${endTime - startTime} ms`);
+    logger.info(
+      `blocks ${fromBlock} => ${toBlock}: Push events to queue done, cost ${
+        endTime - startTime
+      } ms`,
+    );
+  }
+
+  async getBlockRange() {
+    const blockRangeConfig = await this._indexerConfService.getConFigValue(
+      SYNC_BLOCKS_RANGE,
+    );
+    return blockRangeConfig ? +blockRangeConfig : 100;
   }
 
   async pushEventTransfer(isSaveLogs: boolean) {
-    const blockLength = 10;
     try {
-
+      let startBlock = await this._detectStartBlock();
       const currentChainBlockNumber = await this._provider.getBlockNumber();
 
-      const startBlock = await this._detectStartBlock();
       if (currentChainBlockNumber <= startBlock) {
         logger.info('Has Sync To current block');
         return;
       }
 
-      for (
-        let i = +startBlock;
-        i <= currentChainBlockNumber;
-        i += blockLength
-      ) {
-        const fromBlock = i;
-        let toBlock = fromBlock + blockLength;
-        if (toBlock >= currentChainBlockNumber) {
-          toBlock = currentChainBlockNumber;
+      while (true) {
+        const blockLength = await this.getBlockRange();
+        console.log(`Current block length: ${blockLength}`);
+        let end = startBlock + blockLength;
+        if (end > currentChainBlockNumber) {
+          end = currentChainBlockNumber;
         }
-
-        await this.getLogsThenPushToQueue(fromBlock, toBlock, isSaveLogs);
+        await this.getLogsThenPushToQueue(startBlock, end, isSaveLogs);
+        if (startBlock === end) {
+          break;
+        }
+        startBlock = end;
       }
+      console.log('Push event done');
     } catch (err: any) {
-      logger.error('blocks ${fromBlock} => ${toBlock} Push event error: ' + err);
+      logger.error(
+        'blocks ${fromBlock} => ${toBlock} Push event error: ' + err,
+      );
     }
   }
 
@@ -207,23 +233,25 @@ export default class PushEventWorker {
         toBlock = blockNumber;
         count++;
         if (count === blockLength) {
-          await this.getLogsThenPushToQueue(toBlock - blockLength, toBlock, isSaveLogs);
+          await this.getLogsThenPushToQueue(
+            toBlock - blockLength,
+            toBlock,
+            isSaveLogs,
+          );
           count = 0;
         }
       });
-
     } catch (err: any) {
       logger.error('Push event error: ' + err);
     }
   }
-
 
   async run(isSaveLogs = true) {
     console.log(
       `Start push event transfer with save logs option: ${isSaveLogs}`,
     );
     await this.pushEventTransfer(isSaveLogs);
-    await sleep(2000)
+    await sleep(2000);
     this._rabbitMqService.close();
   }
 }

@@ -198,6 +198,9 @@ export default class FilterEventWorker {
     tokenContract.validated = 1;
     //save block number that this token is detected
     tokenContract.block_number = firstTransferEvent.blockNumber;
+    logger.info(
+      `detected token: ${tokenContract.name} - ${tokenAddress} at block number: ${tokenContract.block_number}`,
+    );
     //push to queue
     const messageToQueue = JSON.stringify({
       tokenContract,

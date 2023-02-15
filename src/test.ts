@@ -1,37 +1,28 @@
-import {AppDataSource} from "./data-source";
-import logger from "./logger";
-import {BigNumber, ethers, utils} from "ethers";
-import {CLOUD_FLARE_GATEWAY_ETH_RPC_URL, ERC20_ABI} from "./constants";
-import {TokenContractService, TransferEventService} from "./services";
-import {TokenBalance, TransferEvent} from "./entity";
-import TokenBalanceService from "./services/TokenBalanceService";
-import {PushTransferIDWorker} from "./workers";
-import {getContract} from "./utils";
+import { AppDataSource } from './data-source';
+import logger from './logger';
+import { ethers, utils } from 'ethers';
+import { SMART_CHAIN_TEST_NET_RPC_URL } from './constants';
+import { CounterService } from "./services";
 
-
+// tờ giấy nháp
 const main = async () => {
   const provider = new ethers.providers.JsonRpcProvider(
-    CLOUD_FLARE_GATEWAY_ETH_RPC_URL,
+    SMART_CHAIN_TEST_NET_RPC_URL,
   );
+  // const counterService = new CounterService();
+  // await counterService.initOrResetCounter();
 
+  const p2 = new Promise((resolve, reject) => {
+    setTimeout(resolve, 500, 'two');
+  });
 
-  const service = new TokenContractService();
-  const tokens = await service.findAllValidatedERC20Token();
-  for (const token of tokens) {
-    try {
-      const erc20Contract = getContract(
-        token.address,
-        ERC20_ABI,
-        provider,
-      );
-      const totalSupply = await erc20Contract.totalSupply();
-      token.total_supply = totalSupply.toString();
-      const updated = await service.update(token);
-      logger.info(`Updated token ${updated.address} total supply ${updated.total_supply}`);
-    } catch (err) {
-      console.log(err)
-    }
-  }
+  const p1 = new Promise((resolve, reject) => {
+    setTimeout(resolve, 400, 'one');
+  });
+
+  const response = await Promise.race([p1, p2]);
+  console.log(response);
+
 
 };
 
@@ -40,4 +31,3 @@ AppDataSource.initialize()
   .catch((error) => {
     logger.error('init error: ' + error);
   });
-

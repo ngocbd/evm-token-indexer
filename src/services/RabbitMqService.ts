@@ -1,6 +1,6 @@
 import * as amqp from 'amqplib';
 import logger from '../logger';
-import {RABBITMQ_URL} from '../constants';
+import { RABBITMQ_URL } from '../constants';
 
 export default class RabbitMqService {
   private _rabbitMQConnection: amqp.Connection;
@@ -64,20 +64,24 @@ export default class RabbitMqService {
       if (!this._rabbitMQChannel || !this._rabbitMQConnection) {
         await this.init(queueName);
       }
-      if(messagePerConsumer) {
+      if (messagePerConsumer) {
         this._rabbitMQChannel.prefetch(messagePerConsumer);
       }
-      await this._rabbitMQChannel.consume(queueName, (message) => {
-        if (message) {
-          const msqContent = message.content.toString();
-          //remove message from queue only when messageHandler is done
-          messageHandler(msqContent).then(() => {
-            this._rabbitMQChannel.ack(message);
-          });
-        }
-      }, {
-        noAck: false,
-      });
+      await this._rabbitMQChannel.consume(
+        queueName,
+        (message) => {
+          if (message) {
+            const msqContent = message.content.toString();
+            //remove message from queue only when messageHandler is done
+            messageHandler(msqContent).then(() => {
+              this._rabbitMQChannel.ack(message);
+            });
+          }
+        },
+        {
+          noAck: false,
+        },
+      );
       return true;
     } catch (err: any) {
       logger.error(`AMPQ consume ${queueName} failed `, err);

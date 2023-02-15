@@ -44,3 +44,9 @@ export const convertFromHexToNumberString = (input: any) => {
     return null;
   }
 }
+
+export const isValidAddress = (address: string) => {
+  const isValid = ethers.utils.isAddress(address);
+  const isZeroAddress = address === ethers.constants.AddressZero;
+  return isValid && !isZeroAddress;
+}

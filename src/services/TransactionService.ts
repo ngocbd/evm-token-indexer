@@ -1,6 +1,6 @@
-import { Repository } from 'typeorm';
-import { Transaction } from '../entity';
-import { AppDataSource } from '../data-source';
+import {Repository} from 'typeorm';
+import {Transaction} from '../entity';
+import {AppDataSource} from '../data-source';
 
 export default class TransactionService {
   private readonly transactionRepository: Repository<Transaction>;
@@ -13,6 +13,14 @@ export default class TransactionService {
     return await this.transactionRepository.save(transaction);
   }
 
+  async getMaxBlockNumber(): Promise<number> {
+    const queryRes = await this.transactionRepository
+      .createQueryBuilder('transaction')
+      .select('MAX(transaction.block_number)', 'max_block_number')
+      .getRawOne()
+
+    return queryRes.max_block_number || 0;
+  }
 
   async deleteAll() {
     return await this.transactionRepository.clear();

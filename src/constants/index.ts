@@ -1,5 +1,6 @@
-import { FormatTypes, Interface } from 'ethers/lib/utils';
+import {FormatTypes, Interface} from 'ethers/lib/utils';
 import 'dotenv/config';
+import {SaveBalanceWorker} from "../workers";
 
 export const ERC721_INTERFACE_ID = '0x80ac58cd';
 export const ERC1155_INTERFACE_ID = '0xd9b67a26';
@@ -66,7 +67,7 @@ export const ERC20_ABI = [
   {
     anonymous: false,
     inputs: [
-      { indexed: true, internalType: 'address', name: 'from', type: 'address' },
+      {indexed: true, internalType: 'address', name: 'from', type: 'address'},
       {
         indexed: true,
         internalType: 'address',
@@ -85,7 +86,7 @@ export const ERC20_ABI = [
   },
   {
     inputs: [
-      { internalType: 'address', name: 'owner', type: 'address' },
+      {internalType: 'address', name: 'owner', type: 'address'},
       {
         internalType: 'address',
         name: 'spender',
@@ -93,13 +94,13 @@ export const ERC20_ABI = [
       },
     ],
     name: 'allowance',
-    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    outputs: [{internalType: 'uint256', name: '', type: 'uint256'}],
     stateMutability: 'view',
     type: 'function',
   },
   {
     inputs: [
-      { internalType: 'address', name: 'spender', type: 'address' },
+      {internalType: 'address', name: 'spender', type: 'address'},
       {
         internalType: 'uint256',
         name: 'amount',
@@ -107,48 +108,48 @@ export const ERC20_ABI = [
       },
     ],
     name: 'approve',
-    outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
+    outputs: [{internalType: 'bool', name: '', type: 'bool'}],
     stateMutability: 'nonpayable',
     type: 'function',
   },
   {
-    inputs: [{ internalType: 'address', name: 'account', type: 'address' }],
+    inputs: [{internalType: 'address', name: 'account', type: 'address'}],
     name: 'balanceOf',
-    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    outputs: [{internalType: 'uint256', name: '', type: 'uint256'}],
     stateMutability: 'view',
     type: 'function',
   },
   {
     inputs: [],
     name: 'decimals',
-    outputs: [{ internalType: 'uint8', name: '', type: 'uint8' }],
+    outputs: [{internalType: 'uint8', name: '', type: 'uint8'}],
     stateMutability: 'view',
     type: 'function',
   },
   {
     inputs: [],
     name: 'name',
-    outputs: [{ internalType: 'string', name: '', type: 'string' }],
+    outputs: [{internalType: 'string', name: '', type: 'string'}],
     stateMutability: 'view',
     type: 'function',
   },
   {
     inputs: [],
     name: 'symbol',
-    outputs: [{ internalType: 'string', name: '', type: 'string' }],
+    outputs: [{internalType: 'string', name: '', type: 'string'}],
     stateMutability: 'view',
     type: 'function',
   },
   {
     inputs: [],
     name: 'totalSupply',
-    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    outputs: [{internalType: 'uint256', name: '', type: 'uint256'}],
     stateMutability: 'view',
     type: 'function',
   },
   {
     inputs: [
-      { internalType: 'address', name: 'to', type: 'address' },
+      {internalType: 'address', name: 'to', type: 'address'},
       {
         internalType: 'uint256',
         name: 'amount',
@@ -156,22 +157,22 @@ export const ERC20_ABI = [
       },
     ],
     name: 'transfer',
-    outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
+    outputs: [{internalType: 'bool', name: '', type: 'bool'}],
     stateMutability: 'nonpayable',
     type: 'function',
   },
   {
     inputs: [
-      { internalType: 'address', name: 'from', type: 'address' },
+      {internalType: 'address', name: 'from', type: 'address'},
       {
         internalType: 'address',
         name: 'to',
         type: 'address',
       },
-      { internalType: 'uint256', name: 'amount', type: 'uint256' },
+      {internalType: 'uint256', name: 'amount', type: 'uint256'},
     ],
     name: 'transferFrom',
-    outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
+    outputs: [{internalType: 'bool', name: '', type: 'bool'}],
     stateMutability: 'nonpayable',
     type: 'function',
   },
@@ -202,33 +203,25 @@ export const ERC20_HUMAN_READABLE_ABI = ERC20_INTERFACE.format(
   FormatTypes.full,
 );
 export const RABBITMQ_QUEUE_NAME = 'evm-indexer';
-
+export const SYNC_BLOCKS_RANGE = isProduction ? 'prod_blocks_range' : 'dev_blocks_range';
 export const LIST_AVAILABLE_WORKERS = {
-  SaveDataWorker: 'SaveData',
+  SaveTokenAndTransferEvent: 'SaveTokenAndTransferEvent',
   PushEventWorker: 'PushEvent',
   FilterEventWorker: 'FilterEvent',
   ClearDatabase: 'ClearData',
   SaveLogWorker: 'SaveLog',
   SaveTransactionWorker: 'SaveTransaction',
-  SaveTransferEventWorker: 'SaveTransfer',
-  PushDeletePageWorker: 'PushDeletePage',
-  DeleteDuplicateWorker: 'DeleteDuplicate',
-  CrawlTokenHolderWorker: 'CrawlTokenHolder',
-  PushTokenForCrawlerWorker: 'PushTokenForCrawler',
-  PushTransferIDWorker: 'PushTransferID',
-  TokenBalanceWorker: 'TokenBalance',
-  UpdateTotalSupplyWorker: 'UpdateTotalSupply',
+  SaveBalanceWorker: 'SaveBalance',
 };
 
 export const EVENT_TRANSFER_QUEUE_NAME = 'evm-indexer-event-transfer';
 export const SAVE_LOG_QUEUE_NAME = 'evm-indexer-save-log';
 export const SAVE_DATA_QUEUE_NAME = 'evm-indexer-save-data';
 export const SAVE_TRANSFER_EVENT_QUEUE_NAME = 'evm-indexer-save-transfer_event';
+export const SAVE_TOKEN_BALANCE_QUEUE_NAME = 'evm-indexer-save-balance';
 export const PUSH_EVENT_ERROR_QUEUE_NAME = 'evm-indexer-push-event-error';
-export const BLOCK_NUMBER_QUEUE_NAME = 'evm-indexer-block-number';
 export const SAVE_LOG_ERROR_QUEUE_NAME = 'evm-indexer-save-log-error';
-export const SAVE_TRANSACTION_QUEUE_NAME= 'evm-indexer-save-transaction';
-export const DELETE_DUPLICATE_QUEUE_NAME = 'evm-indexer-delete-duplicate';
-export const CRAWL_TOKEN_HOLDER_QUEUE_NAME = 'evm-indexer-crawl-token-holder';
-export const TOKEN_BALANCE_QUEUE_NAME = 'evm-indexer-token-balance';
+export const SAVE_TRANSACTION_QUEUE_NAME = 'evm-indexer-save-transaction';
 export const lastReadBlockRedisKey = 'evm-push-event-worker-last-read-block';
+export const REDIS_LAST_SAVED_ERC1155_TRANSFER_EVENTS = 'last-erc1155-transfer-events';
+export const REDIS_LAST_CALCULATED_ERC721_TRANSFER_EVENTS = 'last-erc721-transfer-events';

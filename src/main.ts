@@ -3,27 +3,21 @@ import {
   CLOUD_FLARE_GATEWAY_ETH_RPC_URL,
   LIST_AVAILABLE_WORKERS,
 } from './constants';
-import {ethers} from 'ethers';
-import {AppDataSource} from './data-source';
+import { ethers } from 'ethers';
+import { AppDataSource } from './data-source';
 //typeorm migration
 import 'reflect-metadata';
 import {
-  CrawlTokenHolder,
   FilterEventWorker,
-  PushEventWorker, PushTokenForCrawler, PushTransferIDWorker,
-  SaveDataWorker,
+  PushEventWorker,
+  SaveBalanceWorker,
+  SaveTokenAndTransferEventWorker,
   SaveTransactionWorker,
-  SaveTransferEventWorker, TokenBalanceWorker, UpdateTotalSupplyWorker
 } from './workers';
 import logger from './logger';
 import SaveLogWorker from './workers/SaveLogWorker';
 import yargs from 'yargs';
-import {hideBin} from 'yargs/helpers';
-import {RabbitMqService, TokenContractService} from "./services";
-import {sleep} from "./utils";
-import PushDeletePageWorker from "./workers/PushDeletePageWorker";
-import DeleteDuplicateWorker from "./workers/DeleteDuplicateWorker";
-
+import { hideBin } from 'yargs/helpers';
 
 const main = async () => {
   const argv = yargs(hideBin(process.argv)).argv;
@@ -33,56 +27,31 @@ const main = async () => {
 
   const workerName = argv.worker;
   const isSaveLog = +argv.saveLog === 1;
+  
 
+  //TODO: INIT COUNTER TABLE AND BLOCK_RANGE_NUMBER IN CONFIG TABLE
 
   if (workerName) {
     switch (workerName) {
-      case LIST_AVAILABLE_WORKERS.SaveDataWorker:
-        await new SaveDataWorker(provider).run();
+      case LIST_AVAILABLE_WORKERS.SaveTokenAndTransferEvent:
+        await new SaveTokenAndTransferEventWorker(provider).run();
         break;
       case LIST_AVAILABLE_WORKERS.FilterEventWorker:
         await new FilterEventWorker(provider).run();
+        break;
+      case LIST_AVAILABLE_WORKERS.SaveBalanceWorker:
+        await new SaveBalanceWorker(provider).run();
         break;
       case LIST_AVAILABLE_WORKERS.PushEventWorker:
         const pushEventWorker = new PushEventWorker(provider);
         await pushEventWorker.run(isSaveLog);
         break;
-      case LIST_AVAILABLE_WORKERS.PushDeletePageWorker:
-        const pushDeletePageWorker = new PushDeletePageWorker();
-        await pushDeletePageWorker.run();
-        break;
-      case LIST_AVAILABLE_WORKERS.DeleteDuplicateWorker:
-        const deleteDuplicate = new DeleteDuplicateWorker();
-        await deleteDuplicate.run();
-        break;
+
       case LIST_AVAILABLE_WORKERS.SaveTransactionWorker:
         await new SaveTransactionWorker(provider).run();
         break;
-      case LIST_AVAILABLE_WORKERS.SaveTransferEventWorker:
-        await new SaveTransferEventWorker(provider).run();
-        break;
-      case LIST_AVAILABLE_WORKERS.PushTokenForCrawlerWorker:
-        const pushTokenForCrawlerWorker = new PushTokenForCrawler();
-        await pushTokenForCrawlerWorker.run();
-        break;
-      case LIST_AVAILABLE_WORKERS.CrawlTokenHolderWorker:
-        const crawlTokenHolderWorker = new CrawlTokenHolder(provider);
-        await crawlTokenHolderWorker.run();
-        break;
-      case LIST_AVAILABLE_WORKERS.PushTransferIDWorker:
-        const pushTransferIDWorker = new PushTransferIDWorker();
-        await pushTransferIDWorker.run();
-        break;
-      case LIST_AVAILABLE_WORKERS.TokenBalanceWorker:
-        const tokenBalanceWorker = new TokenBalanceWorker();
-        await tokenBalanceWorker.run();
-        break;
       case LIST_AVAILABLE_WORKERS.SaveLogWorker:
         await new SaveLogWorker(provider).run();
-        break;
-      case LIST_AVAILABLE_WORKERS.UpdateTotalSupplyWorker:
-        const updateTokenSupplyWorker = new UpdateTotalSupplyWorker(provider);
-        await updateTokenSupplyWorker.run();
         break;
       case 'list-workers':
         console.log('Available workers: ');
