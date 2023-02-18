@@ -5,104 +5,40 @@ services:
     build: .
     container_name: push_event_worker
     image: lilhuy0405/4bytes-evm-token-indexer
-    volumes:
-      - push_event_worker_log:/app/logs
     command: PushEvent -- --saveLog=0
 
   push_event_save_log:
     build: .
     container_name: push_event_worker_save_log
     image: lilhuy0405/4bytes-evm-token-indexer
-    volumes:
-      - push_event_worker_log:/app/logs
     command: PushEvent -- --saveLog=1
 
   filter_event:
     build: .
     container_name: filter_event_worker
     image: lilhuy0405/4bytes-evm-token-indexer
-    volumes:
-      - filter_event_worker_log:/app/logs
     command: FilterEvent
 
 
-  save_data:
+  save_token_and_transfer:
     build: .
-    container_name: save_data_worker
+    container_name: save_token_and_transfer_worker
     image: lilhuy0405/4bytes-evm-token-indexer
-    volumes:
-      - save_data_worker_log:/app/logs
-    command: SaveData
+    command: SaveTokenAndTransferEvent
   save_log:
     build: .
     container_name: save_log_worker
     image: lilhuy0405/4bytes-evm-token-indexer
-    volumes:
-      - save_log_worker_log:/app/logs
     command: SaveLog
-  delete_duplicate:
-    build: .
-    container_name: delete_duplicate_worker
-    image: lilhuy0405/4bytes-evm-token-indexer
-    command: DeleteDuplicate
 
   save_transaction:
     build: .
     container_name: save_transaction_worker
     image: lilhuy0405/4bytes-evm-token-indexer
-    volumes:
-      - save_transaction_worker_log:/app/logs
     command: SaveTransaction
 
-  save_transfer:
+  save_balance:
     build: .
-    container_name: save_transfer_worker
+    container_name: save_balance_worker
     image: lilhuy0405/4bytes-evm-token-indexer
-    volumes:
-      - save_transfer_worker_log:/app/logs
-    command: SaveTransfer
-
-  push_token_for_crawler:
-    build: .
-    container_name: push_token_for_crawler_worker
-    image: lilhuy0405/4bytes-evm-token-indexer
-    command: PushTokenForCrawler
-
-  crawl_token_holder:
-    build: .
-    container_name: crawl_token_holder_worker
-    image: lilhuy0405/4bytes-evm-token-indexer
-    command: CrawlTokenHolder
-
-  push_transfer_id:
-    build: .
-    container_name: push_transfer_id_worker
-    image: lilhuy0405/4bytes-evm-token-indexer
-    command: PushTransferID
-
-  token_balance:
-    build: .
-    container_name: token_balance_worker
-    image: lilhuy0405/4bytes-evm-token-indexer
-    command: TokenBalance
-
-  update_token_supply:
-    build: .
-    container_name: update_token_supply_worker
-    image: lilhuy0405/4bytes-evm-token-indexer
-    command: UpdateTotalSupply
-
-#Volume mounting for saving logs files
-volumes:
-  push_event_worker_log:
-    name: push_event_worker_log
-  filter_event_worker_log:
-    name: filter_event_worker_log
-  save_data_worker_log:
-    name: save_data_worker_log
-  save_log_worker_log:
-    name: save_log_worker_log
-  save_transaction_worker_log:
-    name: save_transaction_worker_log
-  save_transfer_worker_log:
-    name: save_transfer_worker_log
+    command: SaveBalance

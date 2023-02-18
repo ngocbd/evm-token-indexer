@@ -28,8 +28,8 @@ export default class PushEventWorker {
   constructor(provider: ethers.providers.JsonRpcProvider) {
     this._provider = provider;
     this._rabbitMqService = new RabbitMqService();
-    // this._firstRecognizedTokenBlock = 980_743;
-    this._firstRecognizedTokenBlock = 14481371;
+    this._firstRecognizedTokenBlock = 980_743;
+    // this._firstRecognizedTokenBlock = 14481371;
     this._redisService = new RedisService();
     this._transferEventService = new TransferEventService();
     this._counterService = new CounterService();
@@ -42,9 +42,10 @@ export default class PushEventWorker {
    * else use first recognized block
    * */
   private async _detectStartBlock(): Promise<number> {
-    const inDbBlock = await this._counterService.getCounter(
+    const inDbBlockRes = await this._counterService.getCounter(
       CounterName.BLOCK_NUMBER,
     );
+    const inDbBlock = Number(inDbBlockRes)
     return inDbBlock > this._firstRecognizedTokenBlock
       ? inDbBlock
       : this._firstRecognizedTokenBlock;
@@ -75,8 +76,7 @@ export default class PushEventWorker {
       });
       const endFilter = Date.now();
       logger.info(
-        `blocks ${fromBlock} => ${toBlock}: Filter events cost ${
-          endFilter - startFilter
+        `blocks ${fromBlock} => ${toBlock}: Filter events cost ${endFilter - startFilter
         } ms`,
       );
       return transferEventLogs;
@@ -179,8 +179,7 @@ export default class PushEventWorker {
     // transferEventsMap.clear();
     const endTime = Date.now();
     logger.info(
-      `blocks ${fromBlock} => ${toBlock}: Push events to queue done, cost ${
-        endTime - startTime
+      `blocks ${fromBlock} => ${toBlock}: Push events to queue done, cost ${endTime - startTime
       } ms`,
     );
   }
@@ -196,7 +195,7 @@ export default class PushEventWorker {
     try {
       let startBlock = await this._detectStartBlock();
       const currentChainBlockNumber = await this._provider.getBlockNumber();
-
+      console.log(`Current chain block number: ${currentChainBlockNumber}`);
       if (currentChainBlockNumber <= startBlock) {
         logger.info('Has Sync To current block');
         return;
@@ -204,8 +203,9 @@ export default class PushEventWorker {
 
       while (true) {
         const blockLength = await this.getBlockRange();
-        console.log(`Current block length: ${blockLength}`);
+        logger.info(`Current block length: ${blockLength}`);
         let end = startBlock + blockLength;
+        console.log(`Start push event from block ${startBlock} to ${end}`);
         if (end > currentChainBlockNumber) {
           end = currentChainBlockNumber;
         }

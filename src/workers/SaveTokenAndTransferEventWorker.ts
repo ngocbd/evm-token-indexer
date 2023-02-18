@@ -74,7 +74,7 @@ export default class SaveTokenAndTransferEventWorker {
           data.tokenContract,
         );
         // update last read block
-        this._counterService.setCounter(CounterName.BLOCK_NUMBER, transferEvent.blockNumber)
+        await this._counterService.setCounter(CounterName.BLOCK_NUMBER, transferEvent.blockNumber)
         if (!savedEvents) {
           continue;
         }
