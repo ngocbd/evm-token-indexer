@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import {
   CLOUD_FLARE_GATEWAY_ETH_RPC_URL,
+  FOUR_BYTES_ETH_RPC_URL,
   LIST_AVAILABLE_WORKERS,
 } from './constants';
 import { ethers } from 'ethers';
@@ -22,7 +23,7 @@ import { hideBin } from 'yargs/helpers';
 const main = async () => {
   const argv = yargs(hideBin(process.argv)).argv;
   const provider = new ethers.providers.JsonRpcProvider(
-    CLOUD_FLARE_GATEWAY_ETH_RPC_URL,
+    FOUR_BYTES_ETH_RPC_URL,
   );
 
   const workerName = argv.worker;

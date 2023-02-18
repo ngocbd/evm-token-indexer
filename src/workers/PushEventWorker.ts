@@ -203,7 +203,7 @@ export default class PushEventWorker {
 
       while (true) {
         const blockLength = await this.getBlockRange();
-        logger.info(`Current block length: ${blockLength}`);
+        console.log(`Current block length: ${blockLength}`);
         let end = startBlock + blockLength;
         console.log(`Start push event from block ${startBlock} to ${end}`);
         if (end > currentChainBlockNumber) {
