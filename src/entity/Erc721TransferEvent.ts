@@ -11,13 +11,13 @@ class Erc721TransferEvent {
   block_number: number;
 
   @Column()
-  address: string;
+  address: string; // contract address => hash index on this column
 
   @Column()
-  from: string;
+  from: string;  // from address => hash index on this column
 
   @Column()
-  to: string;
+  to: string;   // to address => hash index on this column
 
   @Column({
     name: 'token_id',
