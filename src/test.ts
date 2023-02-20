@@ -10,11 +10,13 @@ import TokenType from './enums/TokenType';
 // tờ giấy nháp 
 const main = async () => {
   const provider = new ethers.providers.JsonRpcProvider(
-    CLOUD_FLARE_GATEWAY_ETH_RPC_URL,
+    FOUR_BYTES_ETH_RPC_URL,
   );
   const filterWorker = new FilterEventWorker(provider);
-  const res = await filterWorker.getTokenMetaData('0xBC7De10AFe530843e71DfB2e3872405191e8d14A', TokenType.ERC20);
+  const res = await filterWorker.getTokenMetaData('0x89205A3A3b2A69De6Dbf7f01ED13B2108B2c43e7', TokenType.ERC20);
   console.log(res);
+
+  // await new CounterService().initOrResetCounter();
 
 };
 

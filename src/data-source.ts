@@ -31,7 +31,7 @@ export const AppDataSource = new DataSource({
   username: DATABASE_USERNAME,
   password: DATABASE_PASSWORD,
   database: DATABASE_NAME,
-  synchronize: true,
+  synchronize: false,
   logging: false,
   entities: [
     TokenContract,
