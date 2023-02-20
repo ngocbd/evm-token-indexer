@@ -1,6 +1,7 @@
 import { ethers } from 'ethers';
 import TokenType from '../enums/TokenType';
 import {
+  CLOUD_FLARE_GATEWAY_ETH_RPC_URL,
   ERC1155_INTERFACE_ID,
   ERC20_ABI,
   ERC20_HUMAN_READABLE_ABI,
@@ -20,11 +21,12 @@ export default class FilterEventWorker {
   _provider: ethers.providers.JsonRpcProvider;
   _rabbitMqService: RabbitMqService;
   _tokenContractService: TokenContractService;
-
+  _awsProvider: ethers.providers.JsonRpcProvider;
   constructor(provider: ethers.providers.JsonRpcProvider) {
     this._provider = provider;
     this._rabbitMqService = new RabbitMqService();
     this._tokenContractService = new TokenContractService();
+    this._awsProvider = new ethers.providers.JsonRpcProvider(CLOUD_FLARE_GATEWAY_ETH_RPC_URL)
   }
 
   get provider(): ethers.providers.JsonRpcProvider {
@@ -46,7 +48,7 @@ export default class FilterEventWorker {
       const contract = getContract(
         tokenAddress,
         INTERFACE_ERC155_ABI,
-        this._provider,
+        this._awsProvider,
       );
       const isERC721 = await contract.supportsInterface(ERC721_INTERFACE_ID);
       const isERC1155 = await contract.supportsInterface(ERC1155_INTERFACE_ID);
@@ -78,10 +80,11 @@ export default class FilterEventWorker {
     tokenType: TokenType,
   ): Promise<any> {
     try {
+      
       const erc20Contract = getContract(
         tokenAddress,
         ERC20_ABI,
-        this._provider,
+        this._awsProvider,
       );
       const name = await erc20Contract.name();
       const symbol = await erc20Contract.symbol();
@@ -102,6 +105,8 @@ export default class FilterEventWorker {
         ' error: ',
         err.message,
       );
+      console.log(err);
+
       return {
         name: null,
         symbol: null,

@@ -4,6 +4,7 @@ import {
 import { BigNumber, ethers } from 'ethers';
 import RedisService from '../services/RedisService';
 import {
+  CLOUD_FLARE_GATEWAY_ETH_RPC_URL,
   ERC20_ABI,
   SAVE_TOKEN_BALANCE_QUEUE_NAME,
 } from '../constants';
@@ -18,12 +19,14 @@ class SaveBalanceWorker {
   _provider: ethers.providers.JsonRpcProvider;
   _redisService: RedisService;
   _tokenBalanceService: TokenBalanceService;
+  _awsProvider: ethers.providers.JsonRpcProvider;
 
   constructor(provider: ethers.providers.JsonRpcProvider) {
     this._provider = provider;
     this._rabbitMqService = new RabbitMqService();
     this._redisService = new RedisService();
     this._tokenBalanceService = new TokenBalanceService();
+    this._awsProvider = new ethers.providers.JsonRpcProvider(CLOUD_FLARE_GATEWAY_ETH_RPC_URL)
   }
 
   async getErc20Balance(tokenAddress: string, owner: string) {
@@ -31,7 +34,7 @@ class SaveBalanceWorker {
       const erc20Contract = getContract(
         tokenAddress,
         ERC20_ABI,
-        this._provider,
+        this._awsProvider
       );
       const toBalance = await erc20Contract.balanceOf(owner);
       return toBalance.toString();
