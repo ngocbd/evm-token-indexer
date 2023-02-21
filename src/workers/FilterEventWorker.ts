@@ -48,7 +48,7 @@ export default class FilterEventWorker {
       const contract = getContract(
         tokenAddress,
         INTERFACE_ERC155_ABI,
-        this._awsProvider,
+        this._provider,
       );
       const isERC721 = await contract.supportsInterface(ERC721_INTERFACE_ID);
       console.log({ isERC721 });
