@@ -114,6 +114,8 @@ export default class TransferEventService {
       transferEventEntity.address = transferEvent.address;
       transferEventEntity.from = deletePadZero(transferEvent.topics[1]);
       transferEventEntity.to = deletePadZero(transferEvent.topics[2]);
+      console.log("erc721 transfer event topic three", transferEvent.topics[3]);
+      
       const tokenId = convertFromHexToNumberString(transferEvent.topics[3]);
       transferEventEntity.tokenId = tokenId;
       return await this.erc721TransferEventRepository.save(transferEventEntity);

@@ -34,7 +34,7 @@ class SaveBalanceWorker {
       const erc20Contract = getContract(
         tokenAddress,
         ERC20_ABI,
-        this._awsProvider
+        this._provider
       );
       const toBalance = await erc20Contract.balanceOf(owner);
       return toBalance.toString();

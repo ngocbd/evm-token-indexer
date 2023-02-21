@@ -51,6 +51,8 @@ export default class FilterEventWorker {
         this._awsProvider,
       );
       const isERC721 = await contract.supportsInterface(ERC721_INTERFACE_ID);
+      console.log({ isERC721 });
+
       const isERC1155 = await contract.supportsInterface(ERC1155_INTERFACE_ID);
       if (isERC721) {
         return TokenType.ERC721;
@@ -80,7 +82,7 @@ export default class FilterEventWorker {
     tokenType: TokenType,
   ): Promise<any> {
     try {
-      
+
       const erc20Contract = getContract(
         tokenAddress,
         ERC20_ABI,
