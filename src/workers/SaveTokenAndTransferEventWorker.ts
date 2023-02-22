@@ -78,9 +78,7 @@ export default class SaveTokenAndTransferEventWorker {
         if (!savedEvents) {
           continue;
         }
-        logger.info(
-          `[token ${data.tokenContract.address}]: saved transfer event ${savedEvents.tx_hash} at log index: ${savedEvents.log_index}`,
-        );
+ 
         //push message to save balance worker
         if (Array.isArray(savedEvents)) {
           for (let j = 0; j < savedEvents.length; j++) {
@@ -93,7 +91,7 @@ export default class SaveTokenAndTransferEventWorker {
               }),
             );
             logger.info(
-              `Pushed transfer event ${savedEvent.tx_hash} to save token balance queue`,
+              `Saved Pushed transfer event ${savedEvent.tx_hash} to save token balance queue`,
             );
           }
         } else {
@@ -105,7 +103,7 @@ export default class SaveTokenAndTransferEventWorker {
             }),
           );
           logger.info(
-            `Pushed transfer event ${savedEvents.tx_hash} to save token balance queue`,
+            `Saved and Pushed transfer event ${savedEvents.tx_hash} to save token balance queue`,
           );
         }
       }
@@ -128,7 +126,7 @@ export default class SaveTokenAndTransferEventWorker {
     // await this.clearAllData();
     await this._rabbitMqService.consumeMessage(
       SAVE_DATA_QUEUE_NAME,
-      2_000,
+      200,
       this.saveData.bind(this),
     );
   }

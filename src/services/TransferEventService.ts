@@ -181,8 +181,9 @@ export default class TransferEventService {
     }
   }
 
-  async saveBaseOnToken(transferEvent: any, token: TokenContract): Promise<any> {
-    switch (token.type) {
+  async saveBaseOnToken (transferEvent: any, token: any) {
+
+     switch (token.type) {
       case TokenType.ERC20:
         return await this.saveERC20TransferEvent(transferEvent);
         break

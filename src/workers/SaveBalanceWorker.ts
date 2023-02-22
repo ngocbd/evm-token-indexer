@@ -250,7 +250,7 @@ class SaveBalanceWorker {
     // await this.clearAllData();
     await this._rabbitMqService.consumeMessage(
       SAVE_TOKEN_BALANCE_QUEUE_NAME,
-      2_000,
+      500,
       this.saveTokenBalance.bind(this),
     );
   }

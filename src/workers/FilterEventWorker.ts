@@ -6,6 +6,7 @@ import {
   ERC20_ABI,
   ERC20_HUMAN_READABLE_ABI,
   ERC20_INTERFACE,
+  ERC721_INTERFACE,
   ERC721_INTERFACE_ID,
   EVENT_TRANSFER_QUEUE_NAME,
   INTERFACE_ERC155_ABI,
@@ -50,10 +51,19 @@ export default class FilterEventWorker {
         INTERFACE_ERC155_ABI,
         this._provider,
       );
-      const isERC721 = await contract.supportsInterface(ERC721_INTERFACE_ID);
-      console.log({ isERC721 });
+      //check if smart contract has supportsInterface function
+      const methodDefinition = ERC721_INTERFACE.getFunction('supportsInterface');
+      const methodSelector = ERC721_INTERFACE.getSighash(methodDefinition);
+      const methodSelectorHex = methodSelector.substring(2);
+      const bytecode = await this._provider.getCode(tokenAddress);
 
+      if (!bytecode.includes(methodSelectorHex)) {
+        return TokenType.UNKNOWN;
+      }
+
+      const isERC721 = await contract.supportsInterface(ERC721_INTERFACE_ID);
       const isERC1155 = await contract.supportsInterface(ERC1155_INTERFACE_ID);
+      
       if (isERC721) {
         return TokenType.ERC721;
       } else if (isERC1155) {
@@ -120,6 +130,7 @@ export default class FilterEventWorker {
   async isErc20(tokenAddress: string): Promise<boolean> {
     const bytecode = await this._provider.getCode(tokenAddress);
     let isErc20 = true;
+
     for (let i = 0; i < ERC20_HUMAN_READABLE_ABI.length; i++) {
       const abi = ERC20_HUMAN_READABLE_ABI[i];
       //skip constructor and event

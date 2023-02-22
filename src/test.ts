@@ -13,7 +13,7 @@ const main = async () => {
     FOUR_BYTES_ETH_RPC_URL,
   );
   const filterWorker = new FilterEventWorker(provider);
-  const tokenType = await filterWorker.getTokenMetaData('0xaaAEBE6Fe48E54f431b0C390CfaF0b017d09D42d', 1);
+  const tokenType = await filterWorker.detectTokenType('0x3bf2922f4520a8BA0c2eFC3D2a1539678DaD5e9D');
   console.log(tokenType);
 
   // const res = await filterWorker.getTokenMetaData('0x89205A3A3b2A69De6Dbf7f01ED13B2108B2c43e7', TokenType.ERC20);
