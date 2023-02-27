@@ -134,7 +134,7 @@ export default class SaveTokenAndTransferEventWorker {
     // await this.clearAllData();
     await this._rabbitMqService.consumeMessage(
       SAVE_DATA_QUEUE_NAME,
-      null,
+      100,
       this.saveData.bind(this),
     );
   }
