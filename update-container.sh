@@ -1,1 +1,1 @@
-git pull origin master && docker compose down --rmi all -v && docker compose up
+git pull origin main && docker compose down --rmi all -v && docker compose up
