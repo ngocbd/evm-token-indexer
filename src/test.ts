@@ -19,7 +19,7 @@ const main = async () => {
   // const res = await filterWorker.getTokenMetaData('0x89205A3A3b2A69De6Dbf7f01ED13B2108B2c43e7', TokenType.ERC20);
   // console.log(res);
 
-  // await new CounterService().initOrResetCounter();
+  await new CounterService().initOrResetCounter();
 
 };
 

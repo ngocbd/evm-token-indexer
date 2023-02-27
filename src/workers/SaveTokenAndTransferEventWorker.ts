@@ -48,16 +48,21 @@ export default class SaveTokenAndTransferEventWorker {
         isNewToken: boolean;
       } = JSON.parse(message);
       //save token contract only when it's new
+      const startSavceTokenContract = new Date().getTime();
       if (data.isNewToken) {
         const res = await this._tokenContractService.save(data.tokenContract);
         if (res) {
           logger.info(`Saved token contract ${data.tokenContract.address}`);
         }
       }
+      const endSaveTokenContract = new Date().getTime();
+      console.log(`Save token contract took ${endSaveTokenContract - startSavceTokenContract} ms`);
 
+      const startSaveTransferEvent = new Date().getTime();
       let toSaveTxnHash = '';
-      for (let i = 0; i < data.transferEvents.length; i++) {
-        const transferEvent = data.transferEvents[i];
+
+      await Promise.all(data.transferEvents.map(async (transferEvent) => {
+
         const currentEventTxnHash = transferEvent.transactionHash;
         //save transaction only when it is not saved yet
         if (currentEventTxnHash !== toSaveTxnHash) {
@@ -76,9 +81,9 @@ export default class SaveTokenAndTransferEventWorker {
         // update last read block
         await this._counterService.setCounter(CounterName.BLOCK_NUMBER, transferEvent.blockNumber)
         if (!savedEvents) {
-          continue;
+          return;
         }
- 
+
         //push message to save balance worker
         if (Array.isArray(savedEvents)) {
           for (let j = 0; j < savedEvents.length; j++) {
@@ -106,7 +111,10 @@ export default class SaveTokenAndTransferEventWorker {
             `Saved and Pushed transfer event ${savedEvents.tx_hash} to save token balance queue`,
           );
         }
-      }
+        const endSaveTransferEvent = new Date().getTime();
+        console.log(`Save transfer event took ${endSaveTransferEvent - startSaveTransferEvent} ms`);
+      }));
+
     } catch (err: any) {
       logger.error(`Save data failed for ${message} msg: ${err.message}`);
     }
@@ -126,7 +134,7 @@ export default class SaveTokenAndTransferEventWorker {
     // await this.clearAllData();
     await this._rabbitMqService.consumeMessage(
       SAVE_DATA_QUEUE_NAME,
-      200,
+      null,
       this.saveData.bind(this),
     );
   }
