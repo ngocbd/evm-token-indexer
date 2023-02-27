@@ -8,20 +8,18 @@ import {
 import {
   lastReadBlockRedisKey,
   SAVE_DATA_QUEUE_NAME,
-  SAVE_LOG_ERROR_QUEUE_NAME,
   SAVE_TOKEN_BALANCE_QUEUE_NAME,
   SAVE_TRANSACTION_QUEUE_NAME,
   SAVE_TRANSFER_EVENT_QUEUE_NAME,
 } from '../constants';
-import { TokenContract, Transaction, TransferEvent } from '../entity';
-import { convertFromHexToNumberString, deletePadZero, sleep } from '../utils';
-import { BigNumber, ethers, utils } from 'ethers';
+import { TokenContract } from '../entity';
+import { ethers } from 'ethers';
 import logger from '../logger';
 import RedisService from '../services/RedisService';
 import TokenType from '../enums/TokenType';
 import CounterName from '../enums/CounterName';
 
-export default class SaveTokenAndTransferEventWorker {
+export default class SaveTokenWorker {
   _rabbitMqService: RabbitMqService;
   _tokenContractService: TokenContractService;
   _transferEventService: TransferEventService;
@@ -58,63 +56,25 @@ export default class SaveTokenAndTransferEventWorker {
       const endSaveTokenContract = new Date().getTime();
       console.log(`Save token contract took ${endSaveTokenContract - startSavceTokenContract} ms`);
 
-      const startSaveTransferEvent = new Date().getTime();
       let toSaveTxnHash = '';
-
-      await Promise.all(data.transferEvents.map(async (transferEvent) => {
+      for (let i = 0; i < data.transferEvents.length; i++) {
+        const transferEvent = data.transferEvents[i];
+        const pushMsq = JSON.stringify({
+          transferEvent,
+          token: data.tokenContract,
+        })
+        await this._rabbitMqService.pushMessage(SAVE_TRANSFER_EVENT_QUEUE_NAME, pushMsq);
+        logger.info(`Pushed transfer event ${transferEvent.transactionHash} to save transfer event queue`);
 
         const currentEventTxnHash = transferEvent.transactionHash;
+
         //save transaction only when it is not saved yet
         if (currentEventTxnHash !== toSaveTxnHash) {
           toSaveTxnHash = currentEventTxnHash;
-          await this._rabbitMqService.pushMessage(
-            SAVE_TRANSACTION_QUEUE_NAME,
-            toSaveTxnHash,
-          );
+          await this._rabbitMqService.pushMessage(SAVE_TRANSACTION_QUEUE_NAME, toSaveTxnHash);
           logger.info(`Pushed transaction ${toSaveTxnHash} to save txn queue`);
         }
-        //save transfer events
-        const savedEvents = await this._transferEventService.saveBaseOnToken(
-          transferEvent,
-          data.tokenContract,
-        );
-        // update last read block
-        await this._counterService.setCounter(CounterName.BLOCK_NUMBER, transferEvent.blockNumber)
-        if (!savedEvents) {
-          return;
-        }
-
-        //push message to save balance worker
-        if (Array.isArray(savedEvents)) {
-          for (let j = 0; j < savedEvents.length; j++) {
-            const savedEvent = savedEvents[j];
-            await this._rabbitMqService.pushMessage(
-              SAVE_TOKEN_BALANCE_QUEUE_NAME,
-              JSON.stringify({
-                token: data.tokenContract,
-                transferEvent: savedEvent,
-              }),
-            );
-            logger.info(
-              `Saved Pushed transfer event ${savedEvent.tx_hash} to save token balance queue`,
-            );
-          }
-        } else {
-          await this._rabbitMqService.pushMessage(
-            SAVE_TOKEN_BALANCE_QUEUE_NAME,
-            JSON.stringify({
-              token: data.tokenContract,
-              transferEvent: savedEvents,
-            }),
-          );
-          logger.info(
-            `Saved and Pushed transfer event ${savedEvents.tx_hash} to save token balance queue`,
-          );
-        }
-        const endSaveTransferEvent = new Date().getTime();
-        console.log(`Save transfer event took ${endSaveTransferEvent - startSaveTransferEvent} ms`);
-      }));
-
+      }
     } catch (err: any) {
       logger.error(`Save data failed for ${message} msg: ${err.message}`);
     }
@@ -134,7 +94,7 @@ export default class SaveTokenAndTransferEventWorker {
     // await this.clearAllData();
     await this._rabbitMqService.consumeMessage(
       SAVE_DATA_QUEUE_NAME,
-      100,
+      2000,
       this.saveData.bind(this),
     );
   }

@@ -20,11 +20,18 @@ services:
     command: FilterEvent
 
 
-  save_token_and_transfer:
+  save_token:
     build: .
-    container_name: save_token_and_transfer_worker
+    container_name: save_token_worker
     image: 4bytes-evm-token-indexer
-    command: SaveTokenAndTransferEvent
+    command: SaveToken
+
+  save_transfer_event:
+    build: .
+    container_name: save_transfer_event_worker
+    image: 4bytes-evm-token-indexer
+    command: SaveTransferEvent
+  
   save_log:
     build: .
     container_name: save_log_worker

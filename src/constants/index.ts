@@ -209,13 +209,14 @@ export const ERC20_HUMAN_READABLE_ABI = ERC20_INTERFACE.format(
 export const RABBITMQ_QUEUE_NAME = 'evm-indexer';
 export const SYNC_BLOCKS_RANGE = isProduction ? 'prod_blocks_range' : 'dev_blocks_range';
 export const LIST_AVAILABLE_WORKERS = {
-  SaveTokenAndTransferEvent: 'SaveTokenAndTransferEvent',
+  SaveTokenWorker: 'SaveToken',
   PushEventWorker: 'PushEvent',
   FilterEventWorker: 'FilterEvent',
-  ClearDatabase: 'ClearData',
   SaveLogWorker: 'SaveLog',
   SaveTransactionWorker: 'SaveTransaction',
   SaveBalanceWorker: 'SaveBalance',
+  SaveTransferEventWorker: 'SaveTransferEvent',
+
 };
 
 export const EVENT_TRANSFER_QUEUE_NAME = 'evm-indexer-event-transfer';

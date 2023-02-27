@@ -12,13 +12,15 @@ import {
   FilterEventWorker,
   PushEventWorker,
   SaveBalanceWorker,
-  SaveTokenAndTransferEventWorker,
+  SaveTokenWorker,
   SaveTransactionWorker,
 } from './workers';
 import logger from './logger';
 import SaveLogWorker from './workers/SaveLogWorker';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
+import SaveTransferEventWorker from './workers/SaveTransferEventWorker';
+
 
 const main = async () => {
   const argv = yargs(hideBin(process.argv)).argv;
@@ -28,14 +30,14 @@ const main = async () => {
 
   const workerName = argv.worker;
   const isSaveLog = +argv.saveLog === 1;
-  
+
 
   //TODO: INIT COUNTER TABLE AND BLOCK_RANGE_NUMBER IN CONFIG TABLE
 
   if (workerName) {
     switch (workerName) {
-      case LIST_AVAILABLE_WORKERS.SaveTokenAndTransferEvent:
-        await new SaveTokenAndTransferEventWorker(provider).run();
+      case LIST_AVAILABLE_WORKERS.SaveTokenWorker:
+        await new SaveTokenWorker(provider).run();
         break;
       case LIST_AVAILABLE_WORKERS.FilterEventWorker:
         await new FilterEventWorker(provider).run();
@@ -46,6 +48,10 @@ const main = async () => {
       case LIST_AVAILABLE_WORKERS.PushEventWorker:
         const pushEventWorker = new PushEventWorker(provider);
         await pushEventWorker.run(isSaveLog);
+        break;
+        
+      case LIST_AVAILABLE_WORKERS.SaveTransferEventWorker:
+        await new SaveTransferEventWorker(provider).run();
         break;
 
       case LIST_AVAILABLE_WORKERS.SaveTransactionWorker:
