@@ -73,7 +73,9 @@ class CounterService {
         throw new Error(`Counter ${counterName} not found`);
       }
       counterEntity.counter = value;
-      return await this.CounterRepository.save(counterEntity);
+      return await this.CounterRepository.save(counterEntity, {
+        transaction: false
+      });
     } catch (e) {
       console.log(e)
       return null;

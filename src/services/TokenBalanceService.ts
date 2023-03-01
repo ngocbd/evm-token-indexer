@@ -27,16 +27,22 @@ export default class TokenBalanceService {
 
   async saveErc20Balance(erc20Balance: Erc20Balance) {
 
-    return await this.erc20BalanceRepository.save(erc20Balance);
+    return await this.erc20BalanceRepository.save(erc20Balance, {
+      transaction: false,
+    });
   }
 
   async saveErc721Balance(erc721Balance: Erc721Balance) {
-    return await this.erc721BalanceRepository.save(erc721Balance);
+    return await this.erc721BalanceRepository.save(erc721Balance, {
+      transaction: false,
+    });
   }
 
   async saveErc1155Balance(erc1155Balance: Erc1155Balance): Promise<Erc1155Balance> {
     try {
-     return await this.erc1155BalanceRepository.save(erc1155Balance);
+     return await this.erc1155BalanceRepository.save(erc1155Balance, {
+        transaction: false,
+     });
     } catch (err) {
       console.log(err)
       return null;

@@ -1,6 +1,6 @@
-import {Repository} from "typeorm";
-import {IndexerConf} from "../entity";
-import {AppDataSource} from "../data-source";
+import { Repository } from "typeorm";
+import { IndexerConf } from "../entity";
+import { AppDataSource } from "../data-source";
 
 class IndexerConfigService {
   private readonly indexerConfigRepository: Repository<IndexerConf>;
@@ -23,6 +23,10 @@ class IndexerConfigService {
     config.key = key;
     config.value = value;
     return await this.indexerConfigRepository.save(config);
+  }
+
+  async saveBatchConfig(configs: IndexerConf[]): Promise<IndexerConf[]> {
+    return await this.indexerConfigRepository.save(configs);
   }
 }
 

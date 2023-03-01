@@ -22,10 +22,11 @@ export default class TokenContractService {
         },
       });
       if (exist) {
-        console.log('exist');
         throw new Error(`the token ${tokenContract.address} existed`);
       }
-      return await this.tokenContractRepository.save(tokenContract);
+      return await this.tokenContractRepository.save(tokenContract, {
+        transaction: false,
+      });
     } catch (err: any) {
       logger.error('[Token service] saved token failed: ' + err.message);
       return null;

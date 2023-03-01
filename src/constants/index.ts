@@ -230,3 +230,4 @@ export const SAVE_TRANSACTION_QUEUE_NAME = 'evm-indexer-save-transaction';
 export const lastReadBlockRedisKey = 'evm-push-event-worker-last-read-block';
 export const REDIS_LAST_SAVED_ERC1155_TRANSFER_EVENTS = 'last-erc1155-transfer-events';
 export const REDIS_LAST_CALCULATED_ERC721_TRANSFER_EVENTS = 'last-erc721-transfer-events';
+export const SAVE_TRANSFER_EVENT_ERROR_QUEUE_NAME = 'evm-indexer-save-transfer-event-error';

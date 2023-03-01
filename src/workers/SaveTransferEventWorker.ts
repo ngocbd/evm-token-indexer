@@ -1,9 +1,10 @@
 import { ethers } from "ethers";
 import { CounterService, RabbitMqService, TokenContractService, TransferEventService } from "../services";
 import { TokenContract, TransferEvent } from "../entity";
-import { SAVE_TOKEN_BALANCE_QUEUE_NAME, SAVE_TRANSFER_EVENT_QUEUE_NAME } from "../constants";
+import { SAVE_TOKEN_BALANCE_QUEUE_NAME, SAVE_TRANSFER_EVENT_ERROR_QUEUE_NAME, SAVE_TRANSFER_EVENT_QUEUE_NAME } from "../constants";
 import logger from "../logger";
 import CounterName from "../enums/CounterName";
+import { measurePromise } from '../utils/index';
 
 export default class SaveTransferEventWorker {
   _rabbitMqService: RabbitMqService;
@@ -24,7 +25,7 @@ export default class SaveTransferEventWorker {
       const data: { transferEvent: ethers.providers.Log, token: TokenContract } = JSON.parse(msg);
       const start = Date.now();
       //IMPORTANT: just save transaction hash
-      const res = await this._transferEventService.saveBaseOnToken(data.transferEvent, data.token)
+      const res: any = await this._transferEventService.saveBaseOnToken(data.transferEvent, data.token)
       const end = Date.now();
       console.log(`Saved transfer event at ${data.transferEvent.transactionHash} took ${end - start} ms`);
       await this._counterService.setCounter(CounterName.BLOCK_NUMBER, data.transferEvent.blockNumber)
@@ -65,12 +66,11 @@ export default class SaveTransferEventWorker {
     }
   }
 
-
   async run() {
     // await this.clearAllData();
     await this._rabbitMqService.consumeMessage(
       SAVE_TRANSFER_EVENT_QUEUE_NAME,
-      2000,
+      4_000,
       this.saveData.bind(this),
     );
   }

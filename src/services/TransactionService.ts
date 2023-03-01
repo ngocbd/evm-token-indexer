@@ -3,6 +3,7 @@ import {Transaction} from '../entity';
 import {AppDataSource} from '../data-source';
 
 export default class TransactionService {
+
   private readonly transactionRepository: Repository<Transaction>;
 
   constructor() {
@@ -10,7 +11,9 @@ export default class TransactionService {
   }
 
   async save(transaction: Transaction): Promise<Transaction> {
-    return await this.transactionRepository.save(transaction);
+    return await this.transactionRepository.save(transaction, {
+      transaction: false,
+    });
   }
 
   async getMaxBlockNumber(): Promise<number> {
@@ -21,7 +24,9 @@ export default class TransactionService {
 
     return queryRes.max_block_number || 0;
   }
-
+  async saveMany(listTransactionEntity: Transaction[]) {
+    return await this.transactionRepository.save(listTransactionEntity);
+  }
   async deleteAll() {
     return await this.transactionRepository.clear();
   }

@@ -96,6 +96,19 @@ export default class SaveTransactionWorker {
     return res;
   }
 
+  async getTransactionFromBlockChainWithTimeOut(transactionHash: string, timeout = 2000) {
+    const racePromise = new Promise((resolve, reject) => {
+      setTimeout(resolve, timeout, 'timeout');
+    });
+    const getTxPromise = this._provider.getTransaction(transactionHash);
+    const res = await Promise.race([racePromise, getTxPromise]);
+    if (res === 'timeout' || res === null) {
+      logger.warn('Get transaction timeout or failed');
+      return null;
+    }
+    return res;
+  }
+
   async saveData(message: string) {
     try {
       const res = await this.saveTransactionWithTimeOut(message);
@@ -106,7 +119,6 @@ export default class SaveTransactionWorker {
       logger.error(`Save txn failed for ${message} msg: ${err.message}`);
     }
   }
-
   async run() {
     // await this.clearAllData();
     await this._rabbitMqService.consumeMessage(

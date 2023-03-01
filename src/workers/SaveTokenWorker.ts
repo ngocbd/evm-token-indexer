@@ -27,6 +27,7 @@ export default class SaveTokenWorker {
   _provider: ethers.providers.JsonRpcProvider;
   _redisService: RedisService;
   _counterService: CounterService;
+  private readonly RECORD_PER_MESSAGE = 20;
 
   constructor(provider: ethers.providers.JsonRpcProvider) {
     this._rabbitMqService = new RabbitMqService();
@@ -37,7 +38,6 @@ export default class SaveTokenWorker {
     this._redisService = new RedisService();
     this._counterService = new CounterService();
   }
-
   async saveData(message: string) {
     try {
       const data: {
@@ -80,7 +80,6 @@ export default class SaveTokenWorker {
     }
     console.log('end');
   }
-
   //IMPORTANT: this method will delete all data in the database
   async clearAllData() {
     await this._tokenContractService.deleteAll();
