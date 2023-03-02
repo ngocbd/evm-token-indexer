@@ -138,7 +138,7 @@ export default class SaveTransactionWorker {
 
 
   async saveBatch(txn: Transaction) {
-    const tupleSize = 50;
+    const tupleSize = 50                                      ;
     logger.info(`Save batch size: ${tupleSize}`);
     this._tuple.push(txn);
     if (this._tuple.length !== tupleSize) {
