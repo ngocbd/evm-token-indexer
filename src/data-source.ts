@@ -32,7 +32,7 @@ export const AppDataSource = new DataSource({
   password: DATABASE_PASSWORD,
   database: DATABASE_NAME,
   synchronize: false,
-  logging: true,
+  logging: false,
   entities: [
     TokenContract,
     Transaction,

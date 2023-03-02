@@ -208,6 +208,8 @@ export const ERC20_HUMAN_READABLE_ABI = ERC20_INTERFACE.format(
 );
 export const RABBITMQ_QUEUE_NAME = 'evm-indexer';
 export const SYNC_BLOCKS_RANGE = isProduction ? 'prod_blocks_range' : 'dev_blocks_range';
+export const TRANSFER_EVETNS_SAVE_PER_MESSSAGE = isProduction ? 'prod_transfer_event_per_message' : 'dev_transfer_event_per_message';
+export const TRANSACTION_SAVE_PER_MESSSAGE = isProduction ? 'prod_tx_per_message' : 'dev_tx_per_message';
 export const LIST_AVAILABLE_WORKERS = {
   SaveTokenWorker: 'SaveToken',
   PushEventWorker: 'PushEvent',
@@ -216,6 +218,8 @@ export const LIST_AVAILABLE_WORKERS = {
   SaveTransactionWorker: 'SaveTransaction',
   SaveBalanceWorker: 'SaveBalance',
   SaveTransferEventWorker: 'SaveTransferEvent',
+  TestListener: 'TestListener',
+  TestPusher: 'TestPusher',
 
 };
 
@@ -227,6 +231,7 @@ export const SAVE_TOKEN_BALANCE_QUEUE_NAME = 'evm-indexer-save-balance';
 export const PUSH_EVENT_ERROR_QUEUE_NAME = 'evm-indexer-push-event-error';
 export const SAVE_LOG_ERROR_QUEUE_NAME = 'evm-indexer-save-log-error';
 export const SAVE_TRANSACTION_QUEUE_NAME = 'evm-indexer-save-transaction';
+export const TEST_QUEUE_NAME = 'evm-indexer-test';
 export const lastReadBlockRedisKey = 'evm-push-event-worker-last-read-block';
 export const REDIS_LAST_SAVED_ERC1155_TRANSFER_EVENTS = 'last-erc1155-transfer-events';
 export const REDIS_LAST_CALCULATED_ERC721_TRANSFER_EVENTS = 'last-erc721-transfer-events';

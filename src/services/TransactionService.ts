@@ -4,6 +4,7 @@ import {AppDataSource} from '../data-source';
 
 export default class TransactionService {
 
+
   private readonly transactionRepository: Repository<Transaction>;
 
   constructor() {
@@ -25,7 +26,9 @@ export default class TransactionService {
     return queryRes.max_block_number || 0;
   }
   async saveMany(listTransactionEntity: Transaction[]) {
-    return await this.transactionRepository.save(listTransactionEntity);
+    return await this.transactionRepository.save(listTransactionEntity, {
+      transaction: false,
+    });
   }
   async deleteAll() {
     return await this.transactionRepository.clear();

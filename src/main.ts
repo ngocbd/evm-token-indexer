@@ -20,6 +20,8 @@ import SaveLogWorker from './workers/SaveLogWorker';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import SaveTransferEventWorker from './workers/SaveTransferEventWorker';
+import TestPush from './workers/TestPush';
+import TestListen from './workers/TestListen';
 
 
 const main = async () => {
@@ -49,7 +51,7 @@ const main = async () => {
         const pushEventWorker = new PushEventWorker(provider);
         await pushEventWorker.run(isSaveLog);
         break;
-        
+
       case LIST_AVAILABLE_WORKERS.SaveTransferEventWorker:
         await new SaveTransferEventWorker(provider).run();
         break;
@@ -59,6 +61,12 @@ const main = async () => {
         break;
       case LIST_AVAILABLE_WORKERS.SaveLogWorker:
         await new SaveLogWorker(provider).run();
+        break;
+      case LIST_AVAILABLE_WORKERS.TestPusher:
+        await new TestPush().run();
+        break;
+      case LIST_AVAILABLE_WORKERS.TestListener:
+        await new TestListen().run();
         break;
       case 'list-workers':
         console.log('Available workers: ');

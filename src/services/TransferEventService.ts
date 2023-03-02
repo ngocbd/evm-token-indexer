@@ -242,9 +242,13 @@ export default class TransferEventService {
         erc20TransferEvent.amount = convertFromHexToNumberString(transferEvent.data)
         erc20TransferEventEntities.push(erc20TransferEvent);
       }
-      return await this.erc20TransferEventRepository.save(erc20TransferEventEntities);
+      return await this.erc20TransferEventRepository.save(erc20TransferEventEntities, {
+        transaction: false
+      });
     } catch (err) {
       logger.error(`Error when save ERC20 transfer event ${err.message}`);
+      console.log(err);
+
       return [];
     }
   }
@@ -281,6 +285,28 @@ export default class TransferEventService {
     } catch (err) {
       logger.error(`Error when save ERC721 transfer event ${err.message}`);
       return [];
+    }
+  }
+
+  async saveBatchErc1155TransferEvent(transferEvents: any[]): Promise<any[]> {
+    try {
+      const listRes = []
+      for (const transferEvent of transferEvents) {
+        const res = await this.saveERC1155TransferEvent(transferEvent);
+        if (!res) {
+          continue;
+        }
+        if (Array.isArray(res)) {
+          listRes.push(...res);
+        } else {
+          listRes.push(res);
+        }
+      }
+      return listRes;
+    } catch (err) {
+      console.log(err);
+      return [];
+
     }
   }
 

@@ -7,6 +7,7 @@ import IndexerConfigService from './services/IndexerConfigService';
 import FilterEventWorker from './workers/FilterEventWorker';
 import TokenType from './enums/TokenType';
 import CounterName from './enums/CounterName';
+import { TRANSACTION_SAVE_PER_MESSSAGE, TRANSFER_EVETNS_SAVE_PER_MESSSAGE } from './constants/index';
 
 // tờ giấy nháp 
 const main = async () => {
@@ -19,14 +20,9 @@ const main = async () => {
 
   // // const res = await filterWorker.getTokenMetaData('0x89205A3A3b2A69De6Dbf7f01ED13B2108B2c43e7', TokenType.ERC20);
   // // console.log(res);
-  const array = ["1", "2", "3", "4", "5", "6"]
-  const chunkSize = 4;
-  for (let i = 0; i < array.length; i += chunkSize) {
-      const chunk = array.slice(i, i + chunkSize);
-      console.log(chunk);
-      
-      // do whatever
-  }
+  const configService = new IndexerConfigService();
+  await configService.setConfigValue(TRANSACTION_SAVE_PER_MESSSAGE, '50');
+  await configService.setConfigValue(TRANSFER_EVETNS_SAVE_PER_MESSSAGE, '50');
 
 
 
