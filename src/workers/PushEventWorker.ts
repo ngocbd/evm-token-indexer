@@ -51,7 +51,9 @@ export default class PushEventWorker {
       : this._firstRecognizedTokenBlock;
   }
 
-  async getTransferLogs(fromBlock, toBlock, retries = 3) {
+
+  //defaut timeout is 30s
+  async getTransferLogs(fromBlock, toBlock, timeout = 5_000) {
     try {
       const erc20TransferMethodTopic = utils.id(
         'Transfer(address,address,uint256)',
@@ -63,7 +65,12 @@ export default class PushEventWorker {
         'TransferBatch(address,address,address,uint256[],uint256[])',
       );
       const startFilter = Date.now();
-      const transferEventLogs = await this._provider.getLogs({
+
+      const racePromise = new Promise((resolve, reject) => {
+        setTimeout(resolve, timeout, 'timeout');
+      });
+
+      const getTransferEventLogPromise: Promise<any> = this._provider.getLogs({
         fromBlock,
         toBlock,
         topics: [
@@ -74,23 +81,18 @@ export default class PushEventWorker {
           ],
         ],
       });
+
+      const raceResult: any = await Promise.race([racePromise, getTransferEventLogPromise]);
+      if (raceResult === 'timeout') {
+        throw new Error('Timeout');
+      }
       const endFilter = Date.now();
       logger.info(
         `blocks ${fromBlock} => ${toBlock}: Filter events cost ${endFilter - startFilter
         } ms`,
       );
-      return transferEventLogs;
+      return raceResult;
     } catch (err: any) {
-      if (retries > 0) {
-        logger.warn(
-          `Blocks: ${fromBlock} => ${toBlock} get transfer logs failed retries left: ${retries}`,
-        );
-        return this.getTransferLogs(fromBlock, toBlock, retries - 1);
-      }
-      logger.error(
-        'Blocks: ${fromBlock} => ${toBlock} get transfer logs error: ' + err,
-      );
-
       const errorMsg = JSON.stringify({
         err: err?.message || '',
         fromBlock,
@@ -127,6 +129,8 @@ export default class PushEventWorker {
   async getLogsThenPushToQueue(fromBlock, toBlock, isSaveLogs) {
     const startTime = Date.now();
     const transferEventLogs = await this.getTransferLogs(fromBlock, toBlock);
+    const endGetLogs = Date.now();
+
     if (!transferEventLogs) {
       return;
     }
@@ -178,6 +182,8 @@ export default class PushEventWorker {
     }
     // transferEventsMap.clear();
     const endTime = Date.now();
+
+    logger.info(`Get logs cost ${endGetLogs - startTime} ms`);
     logger.info(
       `blocks ${fromBlock} => ${toBlock}: Push events to queue done, cost ${endTime - startTime
       } ms`,
