@@ -107,7 +107,6 @@ export default class SaveTransactionWorker {
     const getTxPromise: Promise<any> = this._provider.getTransaction(transactionHash);
     const res = await Promise.race([racePromise, getTxPromise]);
     if (res === 'timeout' || res === null) {
-      logger.warn('Get transaction timeout or failed');
       const onlyTxHash = new Transaction();
       onlyTxHash.tx_hash = transactionHash;
       onlyTxHash.block_number = BigInt(-1);
@@ -139,7 +138,6 @@ export default class SaveTransactionWorker {
 
   async saveBatch(txn: Transaction) {
     const tupleSize = 50                                      ;
-    logger.info(`Save batch size: ${tupleSize}`);
     this._tuple.push(txn);
     if (this._tuple.length !== tupleSize) {
       return;
@@ -173,7 +171,6 @@ export default class SaveTransactionWorker {
 
   async saveData(message: string) {
     try {
-      console.log(`Save transaction ${message} to db`);
       const txn = await this.getTransactionFromBlockChainWithTimeOut(message);
       await this.saveBatch(txn);
     } catch (err) {

@@ -44,9 +44,7 @@ export default class SaveTransferEventWorker {
       }
       //loop through each token type
 
-      for (let [tokenType, transferEvents] of tokenTypeMap) {
-        console.log(`Saving ${transferEvents.length} transfer events of type ${tokenType}`);
-        
+      for (let [tokenType, transferEvents] of tokenTypeMap) {      
         switch (tokenType) {
           case TokenType.ERC20:
             const res = await this._transferEventService.saveBatchErc20TransferEvent(transferEvents);
@@ -105,7 +103,6 @@ export default class SaveTransferEventWorker {
   async saveData(msg: string) {
     try {
       const data: { transferEvent: ethers.providers.Log, token: TokenContract } = JSON.parse(msg);
-      logger.info(`Received transfer event ${data.transferEvent.transactionHash}`);
       await this.saveBatch(data);
     } catch (err) {
       logger.error(`Save transfer events failed msg: ${err.message}`);

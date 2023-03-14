@@ -86,11 +86,6 @@ export default class PushEventWorker {
       if (raceResult === 'timeout') {
         throw new Error('Timeout');
       }
-      const endFilter = Date.now();
-      logger.info(
-        `blocks ${fromBlock} => ${toBlock}: Filter events cost ${endFilter - startFilter
-        } ms`,
-      );
       return raceResult;
     } catch (err: any) {
       const errorMsg = JSON.stringify({
@@ -116,7 +111,7 @@ export default class PushEventWorker {
         if (endBlock > toBlock) {
           endBlock = toBlock;
         }
-        console.log(`Start push event from block ${startBlock} to ${endBlock}`);
+        logger.info(`Start push event from block ${startBlock} to ${endBlock}`);
         await this.getLogsThenPushToQueue(startBlock, endBlock, isSaveLogs);
       }
     } catch (err: any) {
@@ -127,16 +122,10 @@ export default class PushEventWorker {
   }
 
   async getLogsThenPushToQueue(fromBlock, toBlock, isSaveLogs) {
-    const startTime = Date.now();
     const transferEventLogs = await this.getTransferLogs(fromBlock, toBlock);
-    const endGetLogs = Date.now();
-
     if (!transferEventLogs) {
       return;
     }
-    logger.info(
-      `blocks ${fromBlock} => ${toBlock} transfer event count:  ${transferEventLogs.length}`,
-    );
     const transferEventsMap = new Map<string, unknown[]>();
     transferEventLogs.forEach((item) => {
       const contractAddress = item.address;
@@ -161,9 +150,6 @@ export default class PushEventWorker {
         EVENT_TRANSFER_QUEUE_NAME,
         message,
       );
-      logger.info(
-        `blocks ${fromBlock} => ${toBlock}: Push ${events.length} events of token ${events[0].address} to queue`,
-      );
 
       if (isSaveLogs) {
         const logQueueMsg = JSON.stringify({
@@ -180,14 +166,6 @@ export default class PushEventWorker {
         );
       }
     }
-    // transferEventsMap.clear();
-    const endTime = Date.now();
-
-    logger.info(`Get logs cost ${endGetLogs - startTime} ms`);
-    logger.info(
-      `blocks ${fromBlock} => ${toBlock}: Push events to queue done, cost ${endTime - startTime
-      } ms`,
-    );
   }
 
   async getBlockRange() {
@@ -211,7 +189,7 @@ export default class PushEventWorker {
         const blockLength = await this.getBlockRange();
         console.log(`Current block length: ${blockLength}`);
         let end = startBlock + blockLength;
-        console.log(`Start push event from block ${startBlock} to ${end}`);
+        logger.info(`Start push event from block ${startBlock} to ${end}`);
         if (end > currentChainBlockNumber) {
           end = currentChainBlockNumber;
         }

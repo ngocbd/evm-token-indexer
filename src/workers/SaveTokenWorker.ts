@@ -45,16 +45,10 @@ export default class SaveTokenWorker {
         tokenContract: TokenContract;
         isNewToken: boolean;
       } = JSON.parse(message);
-      //save token contract only when it's new
-      const startSavceTokenContract = new Date().getTime();
+
       if (data.isNewToken) {
         const res = await this._tokenContractService.save(data.tokenContract);
-        if (res) {
-          logger.info(`Saved token contract ${data.tokenContract.address}`);
-        }
       }
-      const endSaveTokenContract = new Date().getTime();
-      console.log(`Save token contract took ${endSaveTokenContract - startSavceTokenContract} ms`);
 
       let toSaveTxnHash = '';
       for (let i = 0; i < data.transferEvents.length; i++) {
@@ -64,7 +58,6 @@ export default class SaveTokenWorker {
           token: data.tokenContract,
         })
         await this._rabbitMqService.pushMessage(SAVE_TRANSFER_EVENT_QUEUE_NAME, pushMsq);
-        logger.info(`Pushed transfer event ${transferEvent.transactionHash} to save transfer event queue`);
 
         const currentEventTxnHash = transferEvent.transactionHash;
 
@@ -72,13 +65,12 @@ export default class SaveTokenWorker {
         if (currentEventTxnHash !== toSaveTxnHash) {
           toSaveTxnHash = currentEventTxnHash;
           await this._rabbitMqService.pushMessage(SAVE_TRANSACTION_QUEUE_NAME, toSaveTxnHash);
-          logger.info(`Pushed transaction ${toSaveTxnHash} to save txn queue`);
         }
       }
+      logger.info(`Save token ${data.tokenContract.address} success`);
     } catch (err: any) {
       logger.error(`Save data failed for ${message} msg: ${err.message}`);
     }
-    console.log('end');
   }
   //IMPORTANT: this method will delete all data in the database
   async clearAllData() {
