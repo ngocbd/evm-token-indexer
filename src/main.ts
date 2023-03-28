@@ -2,6 +2,7 @@
 import {
   CLOUD_FLARE_GATEWAY_ETH_RPC_URL,
   FOUR_BYTES_ETH_RPC_URL,
+  FOUR_BYTES_LAN_ETH_RPC_URL,
   LIST_AVAILABLE_WORKERS,
 } from './constants';
 import { ethers } from 'ethers';
@@ -27,7 +28,7 @@ import TestListen from './workers/TestListen';
 const main = async () => {
   const argv = yargs(hideBin(process.argv)).argv;
   const provider = new ethers.providers.JsonRpcProvider(
-    FOUR_BYTES_ETH_RPC_URL,
+    FOUR_BYTES_LAN_ETH_RPC_URL,
   );
 
   const workerName = argv.worker;

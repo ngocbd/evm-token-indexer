@@ -8,6 +8,7 @@ export const SMART_CHAIN_TEST_NET_RPC_URL =
   'https://data-seed-prebsc-1-s1.binance.org:8545/';
 export const ETH_MAIN_NET_RPC_URL = 'https://rpc.ankr.com/eth';
 export const FOUR_BYTES_ETH_RPC_URL = 'https://erigon.4bytes.io';
+export const FOUR_BYTES_LAN_ETH_RPC_URL = 'http://192.168.89.1/';
 export const CLOUD_FLARE_GATEWAY_ETH_RPC_URL =
   'https://cf.4bytes.io/v1/mainnet';
 export const isProduction = +process.env.PRODUCTION === 1;
