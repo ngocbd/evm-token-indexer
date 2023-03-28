@@ -312,7 +312,12 @@ export default class TransferEventService {
 
   async getHighestBlock() {
     try {
-      const queryRunner = await AppDataSource.createQueryRunner();
+      let queryRunner = TransferEventService._queryRunner;
+      if (!queryRunner) {
+        console.log('create query runner');
+        TransferEventService._queryRunner = AppDataSource.createQueryRunner();
+        queryRunner = TransferEventService._queryRunner;
+      }
       const result = await queryRunner.manager.query(
         `SELECT MAX(block_number)
          FROM ${DATABASE_SCHEMA}.${this._tableName}`,
@@ -326,7 +331,12 @@ export default class TransferEventService {
 
   async getHighestId() {
     try {
-      const queryRunner = await AppDataSource.createQueryRunner();
+      let queryRunner = TransferEventService._queryRunner;
+      if (!queryRunner) {
+        console.log('create query runner');
+        TransferEventService._queryRunner = AppDataSource.createQueryRunner();
+        queryRunner = TransferEventService._queryRunner;
+      }
       const result = await queryRunner.manager.query(
         `SELECT MAX(id)
          FROM ${DATABASE_SCHEMA}.${this._tableName}`,

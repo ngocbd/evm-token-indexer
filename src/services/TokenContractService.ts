@@ -8,7 +8,7 @@ import tokenType from "../enums/TokenType";
 export default class TokenContractService {
   private readonly tokenContractRepository: Repository<TokenContract>;
   _tableName: string;
-
+  private static _queryRunner: any = null;
   constructor() {
     this.tokenContractRepository = AppDataSource.getRepository(TokenContract);
     this._tableName = 'token_contracts';
@@ -66,7 +66,12 @@ export default class TokenContractService {
 
   async getLatestBlockInDb(): Promise<number> {
     try {
-      const queryRunner = await AppDataSource.createQueryRunner();
+      let queryRunner = TokenContractService._queryRunner;
+      if (!queryRunner) {
+        console.log('create query runner');
+        TokenContractService._queryRunner = AppDataSource.createQueryRunner();
+        queryRunner = TokenContractService._queryRunner;
+      }
       const result = await queryRunner.manager.query(
         `SELECT MAX(block_number) FROM ${DATABASE_SCHEMA}.${this._tableName}`,
       );

@@ -8,7 +8,7 @@ import { TransactionService } from ".";
 class CounterService {
   private readonly CounterRepository: Repository<Counter>;
   private readonly transactionService: TransactionService
-
+  private static _queryRunner: any = null;
   constructor() {
     this.CounterRepository = AppDataSource.getRepository(Counter);
     this.transactionService = new TransactionService();
@@ -19,7 +19,12 @@ class CounterService {
   }
 
   async initOrResetCounter() {
-    let queryRunner = AppDataSource.createQueryRunner();
+    let queryRunner = CounterService._queryRunner;
+    if (!queryRunner) {
+      console.log('create query runner');
+      CounterService._queryRunner = AppDataSource.createQueryRunner();
+      queryRunner = CounterService._queryRunner;
+    }
     try {
 
       for (const key of Object.keys(CounterName)) {
@@ -47,6 +52,7 @@ class CounterService {
       console.log(e)
     } finally {
       await queryRunner.release();
+      CounterService._queryRunner = null;
     }
   }
 
