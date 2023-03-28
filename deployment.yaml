@@ -32,7 +32,7 @@ metadata:
   name: indexer-filter-event-worker
   namespace: "ethereum-token-indexer"
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
       app: indexer-filter-event-worker
@@ -60,7 +60,7 @@ metadata:
   name: indexer-save-token-worker
   namespace: "ethereum-token-indexer"
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
       app: indexer-save-token-worker
@@ -88,7 +88,7 @@ metadata:
   name: indexer-save-transfer-event-worker
   namespace: "ethereum-token-indexer"
 spec:
-  replicas: 1
+  replicas: 4
   selector:
     matchLabels:
       app: indexer-save-transfer-event-worker
@@ -111,62 +111,56 @@ spec:
 
 #save_log_worker
 
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: indexer-save-log-worker
-  namespace: "ethereum-token-indexer"
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: indexer-save-log-worker
-  template:
-    metadata:
-      labels:
-        app: indexer-save-log-worker
-    spec:
-      containers:
-      - name: indexer-save-log-worker
-        image: fcs-master-registry.4bytes.io/daica/4bytes-evm-token-indexer:1.0.0 # Change this to your image
-        imagePullPolicy: Always
-        args: ["SaveLog"]
-        resources:
-          limits:
-            memory: "2Gi"
-            cpu: "1"
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: indexer-save-log-worker
+#   namespace: "ethereum-token-indexer"
+# spec:
+#   replicas: 1
+#   selector:
+#     matchLabels:
+#       app: indexer-save-log-worker
+#   template:
+#     metadata:
+#       labels:
+#         app: indexer-save-log-worker
+#     spec:
+#       containers:
+#       - name: indexer-save-log-worker
+#         image: fcs-master-registry.4bytes.io/daica/4bytes-evm-token-indexer:1.0.0 # Change this to your image
+#         imagePullPolicy: Always
+#         args: ["SaveLog"]apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: indexer-save-log-worker
+#   namespace: "ethereum-token-indexer"
+# spec:
+#   replicas: 1
+#   selector:
+#     matchLabels:
+#       app: indexer-save-log-worker
+#   template:
+#     metadata:
+#       labels:
+#         app: indexer-save-log-worker
+#     spec:
+#       containers:
+#       - name: indexer-save-log-worker
+#         image: fcs-master-registry.4bytes.io/daica/4bytes-evm-token-indexer:1.0.0 # Change this to your image
+#         imagePullPolicy: Always
+#         args: ["SaveLog"]
+#         resources:
+#           limits:
+#             memory: "2Gi"
+#             cpu: "1"
+# ---
+#           limits:
+#             memory: "2Gi"
+#             cpu: "1"
 
----
+# ---
 
-
-
-#save_log_worker
-
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: indexer-save-log-worker
-  namespace: "ethereum-token-indexer"
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: indexer-save-log-worker
-  template:
-    metadata:
-      labels:
-        app: indexer-save-log-worker
-    spec:
-      containers:
-      - name: indexer-save-log-worker
-        image: fcs-master-registry.4bytes.io/daica/4bytes-evm-token-indexer:1.0.0 # Change this to your image
-        imagePullPolicy: Always
-        args: ["SaveLog"]
-        resources:
-          limits:
-            memory: "2Gi"
-            cpu: "1"
----
 
 #save_transaction_worker
 
@@ -176,7 +170,7 @@ metadata:
   name: indexer-save-transaction-worker
   namespace: "ethereum-token-indexer"
 spec:
-  replicas: 1
+  replicas: 4
   selector:
     matchLabels:
       app: indexer-save-transaction-worker
@@ -208,7 +202,7 @@ metadata:
   name: indexer-save-balance-worker
   namespace: "ethereum-token-indexer"
 spec:
-  replicas: 1
+  replicas: 4
   selector:
     matchLabels:
       app: indexer-save-balance-worker

@@ -8,6 +8,7 @@ import FilterEventWorker from './workers/FilterEventWorker';
 import TokenType from './enums/TokenType';
 import CounterName from './enums/CounterName';
 import { TRANSACTION_SAVE_PER_MESSSAGE, TRANSFER_EVETNS_SAVE_PER_MESSSAGE } from './constants/index';
+import RedisService from './services/RedisService';
 
 // tờ giấy nháp 
 const main = async () => {
@@ -15,12 +16,17 @@ const main = async () => {
     FOUR_BYTES_ETH_RPC_URL,
   );
 
-  const configService = new IndexerConfigService();
-  const counterService = new CounterService();
+  // const configService = new IndexerConfigService();
+  // const counterService = new CounterService();
 
-  await configService.setConfigValue(TRANSACTION_SAVE_PER_MESSSAGE, '50');
-  await configService.setConfigValue(TRANSFER_EVETNS_SAVE_PER_MESSSAGE, '50');
-  await counterService.initOrResetCounter();
+  // await configService.setConfigValue(TRANSACTION_SAVE_PER_MESSSAGE, '50');
+  // await configService.setConfigValue(TRANSFER_EVETNS_SAVE_PER_MESSSAGE, '50');
+  // await counterService.initOrResetCounter();
+
+  const redis = new RedisService();
+  await redis.setValue('test', 'test');
+  const test = await redis.getValue('test');
+  console.log(test);
 
 
 
