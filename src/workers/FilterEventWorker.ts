@@ -10,6 +10,8 @@ import {
   ERC721_INTERFACE_ID,
   EVENT_TRANSFER_QUEUE_NAME,
   INTERFACE_ERC155_ABI,
+  OPENZEPPELIN_PROXY_OLD_STORAGE,
+  PROXY_LOGIC_STORAGE,
   SAVE_DATA_QUEUE_NAME,
 } from '../constants';
 
@@ -27,7 +29,9 @@ export default class FilterEventWorker {
     this._provider = provider;
     this._rabbitMqService = new RabbitMqService();
     this._tokenContractService = new TokenContractService();
-    this._awsProvider = new ethers.providers.JsonRpcProvider(CLOUD_FLARE_GATEWAY_ETH_RPC_URL)
+    this._awsProvider = new ethers.providers.JsonRpcProvider(
+      CLOUD_FLARE_GATEWAY_ETH_RPC_URL,
+    );
   }
 
   get provider(): ethers.providers.JsonRpcProvider {
@@ -41,6 +45,11 @@ export default class FilterEventWorker {
     retryTime = 1000,
   ): Promise<TokenType> {
     try {
+      const proxyLogicAddr = await this.getProxyLogicAddress(tokenAddress);
+      if (proxyLogicAddr !== undefined) {
+        return this.detectTokenType(proxyLogicAddr);
+      }
+
       const isErc20 = await this.isErc20(tokenAddress);
       if (isErc20) {
         return TokenType.ERC20;
@@ -52,7 +61,8 @@ export default class FilterEventWorker {
         this._provider,
       );
       //check if smart contract has supportsInterface function
-      const methodDefinition = ERC721_INTERFACE.getFunction('supportsInterface');
+      const methodDefinition =
+        ERC721_INTERFACE.getFunction('supportsInterface');
       const methodSelector = ERC721_INTERFACE.getSighash(methodDefinition);
       const methodSelectorHex = methodSelector.substring(2);
       const bytecode = await this._provider.getCode(tokenAddress);
@@ -63,7 +73,7 @@ export default class FilterEventWorker {
 
       const isERC721 = await contract.supportsInterface(ERC721_INTERFACE_ID);
       const isERC1155 = await contract.supportsInterface(ERC1155_INTERFACE_ID);
-      
+
       if (isERC721) {
         return TokenType.ERC721;
       } else if (isERC1155) {
@@ -92,7 +102,6 @@ export default class FilterEventWorker {
     tokenType: TokenType,
   ): Promise<any> {
     try {
-
       const erc20Contract = getContract(
         tokenAddress,
         ERC20_ABI,
@@ -146,6 +155,25 @@ export default class FilterEventWorker {
       }
     }
     return isErc20;
+  }
+
+  async getProxyLogicAddress(tokenAddress: string): Promise<string> {
+    const getStorageAt = async (storageAddress: string) => {
+      const storage = await this._provider.getStorageAt(
+        tokenAddress,
+        storageAddress,
+      );
+      return ethers.utils.defaultAbiCoder.decode(['address'], storage)[0];
+    };
+
+    const logicStorage = [
+      await getStorageAt(PROXY_LOGIC_STORAGE),
+      await getStorageAt(OPENZEPPELIN_PROXY_OLD_STORAGE),
+    ];
+
+    return logicStorage.find(
+      (address) => address !== ethers.constants.AddressZero,
+    );
   }
 
   //get first contract address of this message

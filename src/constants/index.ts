@@ -1,9 +1,13 @@
 import { FormatTypes, Interface } from 'ethers/lib/utils';
 import 'dotenv/config';
-import { SaveBalanceWorker } from "../workers";
+import { SaveBalanceWorker } from '../workers';
 
 export const ERC721_INTERFACE_ID = '0x80ac58cd';
 export const ERC1155_INTERFACE_ID = '0xd9b67a26';
+export const PROXY_LOGIC_STORAGE =
+  '0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc';
+export const OPENZEPPELIN_PROXY_OLD_STORAGE =
+  '0x7050c9e0f4ca769c69bd3a8ef740bc37934f8e2c036e5a723fd8ee048ed3f8c3';
 export const SMART_CHAIN_TEST_NET_RPC_URL =
   'https://data-seed-prebsc-1-s1.binance.org:8545/';
 export const ETH_MAIN_NET_RPC_URL = 'https://rpc.ankr.com/eth';
@@ -201,16 +205,211 @@ export const INTERFACE_ERC155_ABI = [
 ];
 
 export const ERC20_INTERFACE = new Interface(ERC20_ABI);
-export const ERC_721_ABI = [{"inputs":[],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"approved","type":"address"},{"indexed":true,"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"Approval","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"operator","type":"address"},{"indexed":false,"internalType":"bool","name":"approved","type":"bool"}],"name":"ApprovalForAll","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":true,"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"Transfer","type":"event"},{"inputs":[{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"approve","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"owner","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"getApproved","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"operator","type":"address"}],"name":"isApprovedForAll","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"string","name":"_tokenURI","type":"string"}],"name":"mint","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"name","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"ownerOf","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"safeTransferFrom","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"},{"internalType":"bytes","name":"_data","type":"bytes"}],"name":"safeTransferFrom","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"operator","type":"address"},{"internalType":"bool","name":"approved","type":"bool"}],"name":"setApprovalForAll","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes4","name":"interfaceId","type":"bytes4"}],"name":"supportsInterface","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"tokenCount","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"tokenURI","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"transferFrom","outputs":[],"stateMutability":"nonpayable","type":"function"}]
+export const ERC_721_ABI = [
+  { inputs: [], stateMutability: 'nonpayable', type: 'constructor' },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: 'address',
+        name: 'owner',
+        type: 'address',
+      },
+      {
+        indexed: true,
+        internalType: 'address',
+        name: 'approved',
+        type: 'address',
+      },
+      {
+        indexed: true,
+        internalType: 'uint256',
+        name: 'tokenId',
+        type: 'uint256',
+      },
+    ],
+    name: 'Approval',
+    type: 'event',
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: 'address',
+        name: 'owner',
+        type: 'address',
+      },
+      {
+        indexed: true,
+        internalType: 'address',
+        name: 'operator',
+        type: 'address',
+      },
+      { indexed: false, internalType: 'bool', name: 'approved', type: 'bool' },
+    ],
+    name: 'ApprovalForAll',
+    type: 'event',
+  },
+  {
+    anonymous: false,
+    inputs: [
+      { indexed: true, internalType: 'address', name: 'from', type: 'address' },
+      { indexed: true, internalType: 'address', name: 'to', type: 'address' },
+      {
+        indexed: true,
+        internalType: 'uint256',
+        name: 'tokenId',
+        type: 'uint256',
+      },
+    ],
+    name: 'Transfer',
+    type: 'event',
+  },
+  {
+    inputs: [
+      { internalType: 'address', name: 'to', type: 'address' },
+      { internalType: 'uint256', name: 'tokenId', type: 'uint256' },
+    ],
+    name: 'approve',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [{ internalType: 'address', name: 'owner', type: 'address' }],
+    name: 'balanceOf',
+    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [{ internalType: 'uint256', name: 'tokenId', type: 'uint256' }],
+    name: 'getApproved',
+    outputs: [{ internalType: 'address', name: '', type: 'address' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [
+      { internalType: 'address', name: 'owner', type: 'address' },
+      { internalType: 'address', name: 'operator', type: 'address' },
+    ],
+    name: 'isApprovedForAll',
+    outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [{ internalType: 'string', name: '_tokenURI', type: 'string' }],
+    name: 'mint',
+    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'name',
+    outputs: [{ internalType: 'string', name: '', type: 'string' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [{ internalType: 'uint256', name: 'tokenId', type: 'uint256' }],
+    name: 'ownerOf',
+    outputs: [{ internalType: 'address', name: '', type: 'address' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [
+      { internalType: 'address', name: 'from', type: 'address' },
+      { internalType: 'address', name: 'to', type: 'address' },
+      { internalType: 'uint256', name: 'tokenId', type: 'uint256' },
+    ],
+    name: 'safeTransferFrom',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [
+      { internalType: 'address', name: 'from', type: 'address' },
+      { internalType: 'address', name: 'to', type: 'address' },
+      { internalType: 'uint256', name: 'tokenId', type: 'uint256' },
+      { internalType: 'bytes', name: '_data', type: 'bytes' },
+    ],
+    name: 'safeTransferFrom',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [
+      { internalType: 'address', name: 'operator', type: 'address' },
+      { internalType: 'bool', name: 'approved', type: 'bool' },
+    ],
+    name: 'setApprovalForAll',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [{ internalType: 'bytes4', name: 'interfaceId', type: 'bytes4' }],
+    name: 'supportsInterface',
+    outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'symbol',
+    outputs: [{ internalType: 'string', name: '', type: 'string' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'tokenCount',
+    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [{ internalType: 'uint256', name: 'tokenId', type: 'uint256' }],
+    name: 'tokenURI',
+    outputs: [{ internalType: 'string', name: '', type: 'string' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [
+      { internalType: 'address', name: 'from', type: 'address' },
+      { internalType: 'address', name: 'to', type: 'address' },
+      { internalType: 'uint256', name: 'tokenId', type: 'uint256' },
+    ],
+    name: 'transferFrom',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+];
 
 export const ERC721_INTERFACE = new Interface(ERC_721_ABI);
 export const ERC20_HUMAN_READABLE_ABI = ERC20_INTERFACE.format(
   FormatTypes.full,
 );
 export const RABBITMQ_QUEUE_NAME = 'evm-indexer';
-export const SYNC_BLOCKS_RANGE = isProduction ? 'prod_blocks_range' : 'dev_blocks_range';
-export const TRANSFER_EVETNS_SAVE_PER_MESSSAGE = isProduction ? 'prod_transfer_event_per_message' : 'dev_transfer_event_per_message';
-export const TRANSACTION_SAVE_PER_MESSSAGE = isProduction ? 'prod_tx_per_message' : 'dev_tx_per_message';
+export const SYNC_BLOCKS_RANGE = isProduction
+  ? 'prod_blocks_range'
+  : 'dev_blocks_range';
+export const TRANSFER_EVETNS_SAVE_PER_MESSSAGE = isProduction
+  ? 'prod_transfer_event_per_message'
+  : 'dev_transfer_event_per_message';
+export const TRANSACTION_SAVE_PER_MESSSAGE = isProduction
+  ? 'prod_tx_per_message'
+  : 'dev_tx_per_message';
 export const LIST_AVAILABLE_WORKERS = {
   SaveTokenWorker: 'SaveToken',
   PushEventWorker: 'PushEvent',
@@ -221,7 +420,6 @@ export const LIST_AVAILABLE_WORKERS = {
   SaveTransferEventWorker: 'SaveTransferEvent',
   TestListener: 'TestListener',
   TestPusher: 'TestPusher',
-
 };
 
 export const EVENT_TRANSFER_QUEUE_NAME = 'evm-indexer-event-transfer';
@@ -234,6 +432,9 @@ export const SAVE_LOG_ERROR_QUEUE_NAME = 'evm-indexer-save-log-error';
 export const SAVE_TRANSACTION_QUEUE_NAME = 'evm-indexer-save-transaction';
 export const TEST_QUEUE_NAME = 'evm-indexer-test';
 export const lastReadBlockRedisKey = 'evm-push-event-worker-last-read-block';
-export const REDIS_LAST_SAVED_ERC1155_TRANSFER_EVENTS = 'last-erc1155-transfer-events';
-export const REDIS_LAST_CALCULATED_ERC721_TRANSFER_EVENTS = 'last-erc721-transfer-events';
-export const SAVE_TRANSFER_EVENT_ERROR_QUEUE_NAME = 'evm-indexer-save-transfer-event-error';
+export const REDIS_LAST_SAVED_ERC1155_TRANSFER_EVENTS =
+  'last-erc1155-transfer-events';
+export const REDIS_LAST_CALCULATED_ERC721_TRANSFER_EVENTS =
+  'last-erc721-transfer-events';
+export const SAVE_TRANSFER_EVENT_ERROR_QUEUE_NAME =
+  'evm-indexer-save-transfer-event-error';

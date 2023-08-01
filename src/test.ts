@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { AppDataSource } from './data-source';
 import logger from './logger';
 import { ethers, utils } from 'ethers';
@@ -15,11 +16,12 @@ const main = async () => {
   const provider = new ethers.providers.JsonRpcProvider(
     FOUR_BYTES_LAN_ETH_RPC_URL,
   );
-  console.log("provider");
-  
+  const worker = new FilterEventWorker(provider);
 
-  const blockNumber = await provider.getBlockNumber();
-  console.log(blockNumber);
+  const tokenType = await worker.detectTokenType(
+    '0xC6CDE7C39eB2f0F0095F41570af89eFC2C1Ea828',
+  );
+  console.log(tokenType);
 
   // const configService = new IndexerConfigService();
   // const counterService = new CounterService();
