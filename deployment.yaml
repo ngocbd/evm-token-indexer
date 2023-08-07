@@ -3,7 +3,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: indexer-push-event-worker
-  namespace: "ethereum-token-indexer"
+  namespace: "4bytes-eth-token-indexer"
 spec:
   replicas: 1
   selector:
@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: indexer-push-event-worker
-        image: fcs-master-registry.4bytes.io/daica/4bytes-evm-token-indexer:1.0.2 # Change this to your image
+        image: fcs-master-registry.4bytes.io/daica/4bytes-evm-token-indexer:1.0.4 # Change this to your image
         imagePullPolicy: Always
         args: ["PushEvent", "--", "--saveLog=0"]
         resources:
@@ -30,7 +30,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: indexer-filter-event-worker
-  namespace: "ethereum-token-indexer"
+  namespace: "4bytes-eth-token-indexer"
 spec:
   replicas: 3
   selector:
@@ -43,7 +43,7 @@ spec:
     spec:
       containers:
       - name: indexer-filter-event-worker
-        image: fcs-master-registry.4bytes.io/daica/4bytes-evm-token-indexer:1.0.2 # Change this to your image
+        image: fcs-master-registry.4bytes.io/daica/4bytes-evm-token-indexer:1.0.4 # Change this to your image
         imagePullPolicy: Always
         args: ["FilterEvent"]
         resources:
@@ -58,7 +58,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: indexer-save-token-worker
-  namespace: "ethereum-token-indexer"
+  namespace: "4bytes-eth-token-indexer"
 spec:
   replicas: 3
   selector:
@@ -71,7 +71,7 @@ spec:
     spec:
       containers:
       - name: indexer-save-token-worker
-        image: fcs-master-registry.4bytes.io/daica/4bytes-evm-token-indexer:1.0.2 # Change this to your image
+        image: fcs-master-registry.4bytes.io/daica/4bytes-evm-token-indexer:1.0.4 # Change this to your image
         imagePullPolicy: Always
         args: ["SaveToken"]
         resources:
@@ -86,7 +86,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: indexer-save-transfer-event-worker
-  namespace: "ethereum-token-indexer"
+  namespace: "4bytes-eth-token-indexer"
 spec:
   replicas: 4
   selector:
@@ -99,7 +99,7 @@ spec:
     spec:
       containers:
       - name: indexer-save-transfer-event-worker
-        image: fcs-master-registry.4bytes.io/daica/4bytes-evm-token-indexer:1.0.2 # Change this to your image
+        image: fcs-master-registry.4bytes.io/daica/4bytes-evm-token-indexer:1.0.4 # Change this to your image
         imagePullPolicy: Always
         args: ["SaveTransferEvent"]
         resources:
@@ -115,7 +115,7 @@ spec:
 # kind: Deployment
 # metadata:
 #   name: indexer-save-log-worker
-#   namespace: "ethereum-token-indexer"
+#   namespace: "4bytes-eth-token-indexer"
 # spec:
 #   replicas: 1
 #   selector:
@@ -128,13 +128,13 @@ spec:
 #     spec:
 #       containers:
 #       - name: indexer-save-log-worker
-#         image: fcs-master-registry.4bytes.io/daica/4bytes-evm-token-indexer:1.0.2 # Change this to your image
+#         image: fcs-master-registry.4bytes.io/daica/4bytes-evm-token-indexer:1.0.4 # Change this to your image
 #         imagePullPolicy: Always
 #         args: ["SaveLog"]apiVersion: apps/v1
 # kind: Deployment
 # metadata:
 #   name: indexer-save-log-worker
-#   namespace: "ethereum-token-indexer"
+#   namespace: "4bytes-eth-token-indexer"
 # spec:
 #   replicas: 1
 #   selector:
@@ -147,7 +147,7 @@ spec:
 #     spec:
 #       containers:
 #       - name: indexer-save-log-worker
-#         image: fcs-master-registry.4bytes.io/daica/4bytes-evm-token-indexer:1.0.2 # Change this to your image
+#         image: fcs-master-registry.4bytes.io/daica/4bytes-evm-token-indexer:1.0.4 # Change this to your image
 #         imagePullPolicy: Always
 #         args: ["SaveLog"]
 #         resources:
@@ -168,7 +168,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: indexer-save-transaction-worker
-  namespace: "ethereum-token-indexer"
+  namespace: "4bytes-eth-token-indexer"
 spec:
   replicas: 4
   selector:
@@ -181,7 +181,7 @@ spec:
     spec:
       containers:
       - name: indexer-save-transaction-worker
-        image: fcs-master-registry.4bytes.io/daica/4bytes-evm-token-indexer:1.0.2 # Change this to your image
+        image: fcs-master-registry.4bytes.io/daica/4bytes-evm-token-indexer:1.0.4 # Change this to your image
         imagePullPolicy: Always
         args: ["SaveTransaction"]
         resources:
@@ -200,7 +200,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: indexer-save-balance-worker
-  namespace: "ethereum-token-indexer"
+  namespace: "4bytes-eth-token-indexer"
 spec:
   replicas: 4
   selector:
@@ -213,7 +213,7 @@ spec:
     spec:
       containers:
       - name: indexer-save-balance-worker
-        image: fcs-master-registry.4bytes.io/daica/4bytes-evm-token-indexer:1.0.2 # Change this to your image
+        image: fcs-master-registry.4bytes.io/daica/4bytes-evm-token-indexer:1.0.4 # Change this to your image
         imagePullPolicy: Always
         args: ["SaveBalance"]
         resources:

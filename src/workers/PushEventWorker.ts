@@ -1,4 +1,4 @@
-import { ethers, utils } from 'ethers';
+import {ethers, utils} from 'ethers';
 import {
   EVENT_TRANSFER_QUEUE_NAME,
   PUSH_EVENT_ERROR_QUEUE_NAME,
@@ -13,7 +13,7 @@ import {
   TransferEventService,
 } from '../services';
 import RedisService from '../services/RedisService';
-import { sleep } from '../utils';
+import {sleep} from '../utils';
 import CounterName from '../enums/CounterName';
 
 export default class PushEventWorker {
@@ -182,7 +182,7 @@ export default class PushEventWorker {
       console.log(`Current chain block number: ${currentChainBlockNumber}`);
       if (currentChainBlockNumber <= startBlock) {
         logger.info('Has Sync To current block');
-        return;
+        return true;
       }
 
       while (true) {
@@ -204,6 +204,7 @@ export default class PushEventWorker {
       logger.error(
         'blocks ${fromBlock} => ${toBlock} Push event error: ' + err,
       );
+      return false;
     }
   }
 
@@ -213,10 +214,11 @@ export default class PushEventWorker {
       let blockLength = 5;
       let toBlock = 0;
       this._provider.on('block', async (blockNumber) => {
-        logger.info(`New block ${blockNumber} detected`);
+        logger.info(`New block ${blockNumber} detected. Current block length ${blockLength} => need wait ${blockLength - count} blocks more`);
         toBlock = blockNumber;
         count++;
         if (count === blockLength) {
+          logger.info("Push event to queue")
           await this.getLogsThenPushToQueue(
             toBlock - blockLength,
             toBlock,
@@ -234,7 +236,10 @@ export default class PushEventWorker {
     console.log(
       `Start push event transfer with save logs option: ${isSaveLogs}`,
     );
-    await this.pushEventTransfer(isSaveLogs);
+    const haveSyncToLatestBlock = await this.pushEventTransfer(isSaveLogs);
+    if (haveSyncToLatestBlock) {
+      this.pushEventRealTime(isSaveLogs);
+    }
     await sleep(2000);
     this._rabbitMqService.close();
   }
