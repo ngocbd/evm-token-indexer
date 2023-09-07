@@ -1,18 +1,31 @@
 import {
   RabbitMqService,
 } from '../services';
-import { BigNumber, ethers } from 'ethers';
+import {BigNumber, ethers} from 'ethers';
 import RedisService from '../services/RedisService';
 import {
+  BSC_MAINNET_RPC_URL,
   CLOUD_FLARE_GATEWAY_ETH_RPC_URL,
-  ERC20_ABI,
-  SAVE_TOKEN_BALANCE_QUEUE_NAME,
+  ERC20_ABI, getQueueName,
 } from '../constants';
 import TokenType from '../enums/TokenType';
-import { Erc1155Balance, Erc20Balance, Erc721Balance } from '../entity';
+import {Erc1155Balance, Erc20Balance, Erc721Balance} from '../entity';
 import TokenBalanceService from '../services/TokenBalanceService';
-import { getContract, isValidAddress } from '../utils';
+import {getContract, isValidAddress} from '../utils';
 import logger from '../logger';
+import 'dotenv/config';
+
+const getActiveRpcUrl = () => {
+  const network = process.env.NETWORK;
+  switch (network) {
+    case 'eth':
+      return CLOUD_FLARE_GATEWAY_ETH_RPC_URL;
+    case 'bsc':
+      return BSC_MAINNET_RPC_URL
+    default:
+      throw new Error('Network is not supported');
+  }
+}
 
 class SaveBalanceWorker {
   _rabbitMqService: RabbitMqService;
@@ -26,7 +39,7 @@ class SaveBalanceWorker {
     this._rabbitMqService = new RabbitMqService();
     this._redisService = new RedisService();
     this._tokenBalanceService = new TokenBalanceService();
-    this._awsProvider = new ethers.providers.JsonRpcProvider(CLOUD_FLARE_GATEWAY_ETH_RPC_URL)
+    this._awsProvider = new ethers.providers.JsonRpcProvider(getActiveRpcUrl());
   }
 
   async getErc20Balance(tokenAddress: string, owner: string) {
@@ -192,7 +205,8 @@ class SaveBalanceWorker {
               erc1155Balance.tokenId = transferEvent.tokenId;
               await this._tokenBalanceService.saveErc1155Balance(erc1155Balance);
             }
-          };
+          }
+          ;
         }
       }
 
@@ -221,7 +235,8 @@ class SaveBalanceWorker {
               erc1155Balance.tokenId = transferEvent.tokenId;
               await this._tokenBalanceService.saveErc1155Balance(erc1155Balance);
             }
-          };
+          }
+          ;
         }
       }
     } catch (err) {
@@ -230,7 +245,7 @@ class SaveBalanceWorker {
   }
 
   async saveTokenBalance(message: string) {
-    const { token, transferEvent } = JSON.parse(message);
+    const {token, transferEvent} = JSON.parse(message);
     switch (token.type) {
       case TokenType.ERC20:
         await this.saveErc20Balance(token, transferEvent);
@@ -249,7 +264,7 @@ class SaveBalanceWorker {
   async run() {
     // await this.clearAllData();
     await this._rabbitMqService.consumeMessage(
-      SAVE_TOKEN_BALANCE_QUEUE_NAME,
+      getQueueName().SAVE_TOKEN_BALANCE_QUEUE_NAME,
       500,
       this.saveTokenBalance.bind(this),
     );

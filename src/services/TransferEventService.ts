@@ -1,7 +1,7 @@
 import { Not, Repository } from 'typeorm';
 import { Erc1155TransferEvent, Erc20TransferEvent, Erc721TransferEvent, TokenContract, TransferEvent } from '../entity';
 import { AppDataSource } from '../data-source';
-import { DATABASE_SCHEMA, REDIS_LAST_SAVED_ERC1155_TRANSFER_EVENTS } from '../constants';
+import {DATABASE_SCHEMA, getQueueName} from '../constants';
 import TokenType from "../enums/TokenType";
 import logger from "../logger";
 import { convertFromHexToNumberString, deletePadZero } from "../utils";
@@ -129,7 +129,7 @@ export default class TransferEventService {
 
   async saveERC1155TransferEvent(transferEvent: any) {
     try {
-      const lastSavedTransfer = await this.redisService.getValue(REDIS_LAST_SAVED_ERC1155_TRANSFER_EVENTS) || '';
+      const lastSavedTransfer = await this.redisService.getValue(getQueueName().REDIS_LAST_SAVED_ERC1155_TRANSFER_EVENTS) || '';
       const [txHash, logIndex] = lastSavedTransfer.split('-');
       if (txHash === transferEvent.transactionHash && logIndex === transferEvent.logIndex.toString()) {
         throw new Error(`Transfer event with tx_hash ${transferEvent.transactionHash} and log_index ${transferEvent.logIndex} already saved`);
@@ -165,7 +165,7 @@ export default class TransferEventService {
           res.push(saved)
         }
         // update last saved transfer event
-        await this.redisService.setValue(REDIS_LAST_SAVED_ERC1155_TRANSFER_EVENTS, `${transferEvent.transactionHash}-${transferEvent.logIndex}`);
+        await this.redisService.setValue(getQueueName().REDIS_LAST_SAVED_ERC1155_TRANSFER_EVENTS, `${transferEvent.transactionHash}-${transferEvent.logIndex}`);
         return res;
       } else {
         const [tokenId, amount] = utils.defaultAbiCoder.decode(
@@ -174,7 +174,7 @@ export default class TransferEventService {
         );
         entity.tokenId = tokenId.toString();
         entity.amount = amount.toString();
-        await this.redisService.setValue(REDIS_LAST_SAVED_ERC1155_TRANSFER_EVENTS, `${transferEvent.transactionHash}-${transferEvent.logIndex}`);
+        await this.redisService.setValue(getQueueName().REDIS_LAST_SAVED_ERC1155_TRANSFER_EVENTS, `${transferEvent.transactionHash}-${transferEvent.logIndex}`);
         return await this.erc1155TransferEventRepository.save(entity);
       }
     } catch (err) {

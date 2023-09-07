@@ -3,7 +3,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: indexer-push-event-worker
-  namespace: "4bytes-eth-token-indexer"
+  namespace: "4bytes-bsc-token-indexer"
 spec:
   replicas: 1
   selector:
@@ -30,7 +30,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: indexer-filter-event-worker
-  namespace: "4bytes-eth-token-indexer"
+  namespace: "4bytes-bsc-token-indexer"
 spec:
   replicas: 3
   selector:
@@ -58,7 +58,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: indexer-save-token-worker
-  namespace: "4bytes-eth-token-indexer"
+  namespace: "4bytes-bsc-token-indexer"
 spec:
   replicas: 3
   selector:
@@ -86,7 +86,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: indexer-save-transfer-event-worker
-  namespace: "4bytes-eth-token-indexer"
+  namespace: "4bytes-bsc-token-indexer"
 spec:
   replicas: 4
   selector:

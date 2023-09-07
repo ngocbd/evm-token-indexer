@@ -1,12 +1,11 @@
-import { ethers } from "ethers";
-import { CounterService, RabbitMqService, TokenContractService, TransferEventService } from "../services";
-import { TokenContract, TransferEvent } from "../entity";
-import { SAVE_TOKEN_BALANCE_QUEUE_NAME, SAVE_TRANSFER_EVENT_ERROR_QUEUE_NAME, SAVE_TRANSFER_EVENT_QUEUE_NAME } from "../constants";
+import {ethers} from "ethers";
+import {CounterService, RabbitMqService, TokenContractService, TransferEventService} from "../services";
+import {TokenContract} from "../entity";
 import logger from "../logger";
 import CounterName from "../enums/CounterName";
-import { measurePromise } from '../utils/index';
 import TokenType from "../enums/TokenType";
 import IndexerConfigService from '../services/IndexerConfigService';
+import {getQueueName} from "../constants";
 
 export default class SaveTransferEventWorker {
   _rabbitMqService: RabbitMqService;
@@ -22,7 +21,7 @@ export default class SaveTransferEventWorker {
     this._rabbitMqService = new RabbitMqService();
     this._transferEventService = new TransferEventService();
     this._counterService = new CounterService();
-    
+
   }
 
   async saveBatch(data: { transferEvent: ethers.providers.Log, token: TokenContract }) {
@@ -44,13 +43,13 @@ export default class SaveTransferEventWorker {
       }
       //loop through each token type
 
-      for (let [tokenType, transferEvents] of tokenTypeMap) {      
+      for (let [tokenType, transferEvents] of tokenTypeMap) {
         switch (tokenType) {
           case TokenType.ERC20:
             const res = await this._transferEventService.saveBatchErc20TransferEvent(transferEvents);
             await Promise.all(res.map(async (transferEvent) => {
               await this._rabbitMqService.pushMessage(
-                SAVE_TOKEN_BALANCE_QUEUE_NAME,
+                getQueueName().SAVE_TOKEN_BALANCE_QUEUE_NAME,
                 JSON.stringify({
                   token: data.token,
                   transferEvent,
@@ -66,7 +65,7 @@ export default class SaveTransferEventWorker {
             const savedErc721TransferEvents = await this._transferEventService.saveBatchErc721TransferEvent(transferEvents);
             await Promise.all(savedErc721TransferEvents.map(async (transferEvent) => {
               await this._rabbitMqService.pushMessage(
-                SAVE_TOKEN_BALANCE_QUEUE_NAME,
+                getQueueName().SAVE_TOKEN_BALANCE_QUEUE_NAME,
                 JSON.stringify({
                   token: data.token,
                   transferEvent,
@@ -80,7 +79,7 @@ export default class SaveTransferEventWorker {
             const savedErc1155TransferEvents = await this._transferEventService.saveBatchErc1155TransferEvent(transferEvents);
             await Promise.all(savedErc1155TransferEvents.map(async (transferEvent) => {
               await this._rabbitMqService.pushMessage(
-                SAVE_TOKEN_BALANCE_QUEUE_NAME,
+                getQueueName().SAVE_TOKEN_BALANCE_QUEUE_NAME,
                 JSON.stringify({
                   token: data.token,
                   transferEvent,
@@ -94,7 +93,7 @@ export default class SaveTransferEventWorker {
       }
     } catch (err) {
       logger.error(err);
-      await this._rabbitMqService.pushMessage(SAVE_TRANSFER_EVENT_ERROR_QUEUE_NAME, JSON.stringify(this._tuple));
+      await this._rabbitMqService.pushMessage(getQueueName().SAVE_TRANSFER_EVENT_ERROR_QUEUE_NAME, JSON.stringify(this._tuple));
     } finally {
       this._tuple = [];
     }
@@ -112,7 +111,7 @@ export default class SaveTransferEventWorker {
   async run() {
     // await this.clearAllData();
     await this._rabbitMqService.consumeMessage(
-      SAVE_TRANSFER_EVENT_QUEUE_NAME,
+      getQueueName().SAVE_TRANSFER_EVENT_QUEUE_NAME,
       200,
       this.saveData.bind(this),
     );

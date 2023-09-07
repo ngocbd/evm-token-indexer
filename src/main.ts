@@ -1,14 +1,15 @@
 #!/usr/bin/env node
 import {
   CLOUD_FLARE_GATEWAY_ETH_RPC_URL,
-  FOUR_BYTES_ETH_RPC_URL,
+  FOUR_BYTES_ETH_RPC_URL, FOUR_BYTES_LAN_BSC_RPC_URL,
   FOUR_BYTES_LAN_ETH_RPC_URL,
   LIST_AVAILABLE_WORKERS,
 } from './constants';
-import { ethers } from 'ethers';
-import { AppDataSource } from './data-source';
+import {ethers} from 'ethers';
+import {AppDataSource} from './data-source';
 //typeorm migration
 import 'reflect-metadata';
+import 'dotenv/config';
 import {
   FilterEventWorker,
   PushEventWorker,
@@ -19,23 +20,32 @@ import {
 import logger from './logger';
 import SaveLogWorker from './workers/SaveLogWorker';
 import yargs from 'yargs';
-import { hideBin } from 'yargs/helpers';
+import {hideBin} from 'yargs/helpers';
 import SaveTransferEventWorker from './workers/SaveTransferEventWorker';
 import TestPush from './workers/TestPush';
 import TestListen from './workers/TestListen';
 
-
+const getRpcUrl = () => {
+  const network = process.env.NETWORK;
+  switch (network) {
+    case 'eth':
+      return FOUR_BYTES_LAN_ETH_RPC_URL;
+    case 'bsc':
+      return FOUR_BYTES_LAN_BSC_RPC_URL;
+    default:
+      throw new Error('Network is not supported');
+  }
+}
 const main = async () => {
   const argv = yargs(hideBin(process.argv)).argv;
+
+  const rpcUrl = getRpcUrl();
   const provider = new ethers.providers.JsonRpcProvider(
-    FOUR_BYTES_LAN_ETH_RPC_URL,
+    rpcUrl,
   );
 
   const workerName = argv.worker;
   const isSaveLog = +argv.saveLog === 1;
-
-
-  //TODO: INIT COUNTER TABLE AND BLOCK_RANGE_NUMBER IN CONFIG TABLE
 
   if (workerName) {
     switch (workerName) {

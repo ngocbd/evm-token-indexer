@@ -3,7 +3,7 @@ import { ethers } from 'ethers';
 import { Transaction } from '../entity';
 import logger from '../logger';
 import { sleep } from '../utils';
-import { SAVE_TRANSACTION_QUEUE_NAME, TRANSACTION_SAVE_PER_MESSSAGE } from '../constants';
+import {getQueueName, TRANSACTION_SAVE_PER_MESSSAGE} from '../constants';
 
 export default class SaveTransactionWorker {
   _rabbitMqService: RabbitMqService;
@@ -182,7 +182,7 @@ export default class SaveTransactionWorker {
     const tupleSize = await this.getTupleSize();
     logger.info(`Save transaction per message: ${tupleSize}`);
     await this._rabbitMqService.consumeMessage(
-      SAVE_TRANSACTION_QUEUE_NAME,
+      getQueueName().SAVE_TRANSACTION_QUEUE_NAME,
       500,
       this.saveData.bind(this),
     );

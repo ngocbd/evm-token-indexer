@@ -1,9 +1,9 @@
-import { SAVE_LOG_ERROR_QUEUE_NAME, SAVE_LOG_QUEUE_NAME } from '../constants';
 import { ethers } from 'ethers';
 import TokenLogService from '../services/TokenLogService';
 import { TokenLog } from '../entity';
 import logger from '../logger';
 import { RabbitMqService } from '../services';
+import {getQueueName} from "../constants";
 
 export default class SaveLogWorker {
   private _rabbitMqService: RabbitMqService;
@@ -48,7 +48,7 @@ export default class SaveLogWorker {
         address: filter.address,
       });
       await this._rabbitMqService.pushMessage(
-        SAVE_LOG_ERROR_QUEUE_NAME,
+        getQueueName().SAVE_LOG_ERROR_QUEUE_NAME,
         errorMsg,
       );
       logger.info(`Push ${errorMsg} to error queue`);
@@ -58,7 +58,7 @@ export default class SaveLogWorker {
 
   async run() {
     await this._rabbitMqService.consumeMessage(
-      SAVE_LOG_QUEUE_NAME,
+     getQueueName().SAVE_LOG_QUEUE_NAME,
       2000,
       this.saveLog.bind(this),
     );

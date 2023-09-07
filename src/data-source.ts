@@ -17,11 +17,10 @@ import {
 import 'dotenv/config';
 import {
   DATABASE_HOST,
-  DATABASE_NAME,
   DATABASE_PASSWORD,
   DATABASE_PORT,
   DATABASE_SCHEMA,
-  DATABASE_USERNAME,
+  DATABASE_USERNAME, getDatabaseName,
 } from './constants';
 
 export const AppDataSource = new DataSource({
@@ -30,7 +29,7 @@ export const AppDataSource = new DataSource({
   port: DATABASE_PORT,
   username: DATABASE_USERNAME,
   password: DATABASE_PASSWORD,
-  database: DATABASE_NAME,
+  database: getDatabaseName(),
   synchronize: false,
   logging: false,
   entities: [

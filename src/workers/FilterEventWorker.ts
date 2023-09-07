@@ -7,12 +7,10 @@ import {
   ERC20_HUMAN_READABLE_ABI,
   ERC20_INTERFACE,
   ERC721_INTERFACE,
-  ERC721_INTERFACE_ID,
-  EVENT_TRANSFER_QUEUE_NAME,
+  ERC721_INTERFACE_ID, getQueueName,
   INTERFACE_ERC155_ABI,
   OPENZEPPELIN_PROXY_OLD_STORAGE,
   PROXY_LOGIC_STORAGE,
-  SAVE_DATA_QUEUE_NAME,
 } from '../constants';
 
 import { RabbitMqService, TokenContractService } from '../services';
@@ -205,7 +203,7 @@ export default class FilterEventWorker {
         isNewToken: false,
       });
       await this._rabbitMqService.pushMessage(
-        SAVE_DATA_QUEUE_NAME,
+        getQueueName().SAVE_DATA_QUEUE_NAME,
         messageToQueue,
       );
       logger.info(
@@ -228,7 +226,7 @@ export default class FilterEventWorker {
         isNewToken: true,
       });
       await this._rabbitMqService.pushMessage(
-        SAVE_DATA_QUEUE_NAME,
+        getQueueName().SAVE_DATA_QUEUE_NAME,
         messageToQueue,
       );
       logger.info(
@@ -251,7 +249,7 @@ export default class FilterEventWorker {
       isNewToken: true,
     });
     await this._rabbitMqService.pushMessage(
-      SAVE_DATA_QUEUE_NAME,
+      getQueueName().SAVE_DATA_QUEUE_NAME,
       messageToQueue,
     );
     logger.info(
@@ -262,7 +260,7 @@ export default class FilterEventWorker {
 
   async run() {
     await this._rabbitMqService.consumeMessage(
-      EVENT_TRANSFER_QUEUE_NAME,
+      getQueueName().EVENT_TRANSFER_QUEUE_NAME,
       2000,
       this.filterEventTransfer.bind(this),
     );

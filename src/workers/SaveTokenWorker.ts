@@ -5,19 +5,11 @@ import {
   TransactionService,
   TransferEventService,
 } from '../services';
-import {
-  lastReadBlockRedisKey,
-  SAVE_DATA_QUEUE_NAME,
-  SAVE_TOKEN_BALANCE_QUEUE_NAME,
-  SAVE_TRANSACTION_QUEUE_NAME,
-  SAVE_TRANSFER_EVENT_QUEUE_NAME,
-} from '../constants';
 import { TokenContract } from '../entity';
 import { ethers } from 'ethers';
 import logger from '../logger';
 import RedisService from '../services/RedisService';
-import TokenType from '../enums/TokenType';
-import CounterName from '../enums/CounterName';
+import {getQueueName} from "../constants";
 
 export default class SaveTokenWorker {
   _rabbitMqService: RabbitMqService;
@@ -47,7 +39,7 @@ export default class SaveTokenWorker {
       } = JSON.parse(message);
 
       if (data.isNewToken) {
-        const res = await this._tokenContractService.save(data.tokenContract);
+         await this._tokenContractService.save(data.tokenContract);
       }
 
       let toSaveTxnHash = '';
@@ -57,14 +49,14 @@ export default class SaveTokenWorker {
           transferEvent,
           token: data.tokenContract,
         })
-        await this._rabbitMqService.pushMessage(SAVE_TRANSFER_EVENT_QUEUE_NAME, pushMsq);
+        await this._rabbitMqService.pushMessage(getQueueName().SAVE_TRANSFER_EVENT_QUEUE_NAME, pushMsq);
 
         const currentEventTxnHash = transferEvent.transactionHash;
 
         //save transaction only when it is not saved yet
         if (currentEventTxnHash !== toSaveTxnHash) {
           toSaveTxnHash = currentEventTxnHash;
-          await this._rabbitMqService.pushMessage(SAVE_TRANSACTION_QUEUE_NAME, toSaveTxnHash);
+          await this._rabbitMqService.pushMessage(getQueueName().SAVE_TRANSACTION_QUEUE_NAME, toSaveTxnHash);
         }
       }
       logger.info(`Save token ${data.tokenContract.address} success`);
@@ -78,13 +70,13 @@ export default class SaveTokenWorker {
     await this._transferEventService.deleteAll();
     await this._transactionService.deleteAll();
     await this._redisService.init();
-    await this._redisService.setValue(lastReadBlockRedisKey, 0);
+    await this._redisService.setValue(getQueueName().lastReadBlockRedisKey, 0);
   }
 
   async run() {
     // await this.clearAllData();
     await this._rabbitMqService.consumeMessage(
-      SAVE_DATA_QUEUE_NAME,
+     getQueueName().SAVE_DATA_QUEUE_NAME,
       2000,
       this.saveData.bind(this),
     );

@@ -1,8 +1,6 @@
 import {ethers, utils} from 'ethers';
 import {
-  EVENT_TRANSFER_QUEUE_NAME,
-  PUSH_EVENT_ERROR_QUEUE_NAME,
-  SAVE_LOG_QUEUE_NAME,
+  getQueueName,
   SYNC_BLOCKS_RANGE,
 } from '../constants';
 import logger from '../logger';
@@ -28,7 +26,7 @@ export default class PushEventWorker {
   constructor(provider: ethers.providers.JsonRpcProvider) {
     this._provider = provider;
     this._rabbitMqService = new RabbitMqService();
-    this._firstRecognizedTokenBlock = 980_743;
+    this._firstRecognizedTokenBlock = 0;
     // this._firstRecognizedTokenBlock = 14481371;
     this._redisService = new RedisService();
     this._transferEventService = new TransferEventService();
@@ -94,7 +92,7 @@ export default class PushEventWorker {
         toBlock,
       });
       await this._rabbitMqService.pushMessage(
-        PUSH_EVENT_ERROR_QUEUE_NAME,
+        getQueueName().PUSH_EVENT_ERROR_QUEUE_NAME,
         errorMsg,
       );
       logger.info(`Push ${errorMsg} to error queue`);
@@ -147,7 +145,7 @@ export default class PushEventWorker {
       const message = JSON.stringify(events);
 
       await this._rabbitMqService.pushMessage(
-        EVENT_TRANSFER_QUEUE_NAME,
+        getQueueName().EVENT_TRANSFER_QUEUE_NAME,
         message,
       );
 
@@ -158,7 +156,7 @@ export default class PushEventWorker {
           toBlock,
         });
         await this._rabbitMqService.pushMessage(
-          SAVE_LOG_QUEUE_NAME,
+          getQueueName().SAVE_LOG_QUEUE_NAME,
           logQueueMsg,
         );
         logger.info(
