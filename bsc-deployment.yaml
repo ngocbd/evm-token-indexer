@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: indexer-push-event-worker
-        image: fcs-master-registry.4bytes.io/daica/4bytes-evm-token-indexer:1.0.4 # Change this to your image
+        image:  fcs-master-registry.4bytes.io/daica/4bytes-evm-bsc-token-indexer:1.0.0 # Change this to your image
         imagePullPolicy: Always
         args: ["PushEvent", "--", "--saveLog=0"]
         resources:
@@ -43,7 +43,7 @@ spec:
     spec:
       containers:
       - name: indexer-filter-event-worker
-        image: fcs-master-registry.4bytes.io/daica/4bytes-evm-token-indexer:1.0.4 # Change this to your image
+        image:  fcs-master-registry.4bytes.io/daica/4bytes-evm-bsc-token-indexer:1.0.0 # Change this to your image
         imagePullPolicy: Always
         args: ["FilterEvent"]
         resources:
@@ -71,7 +71,7 @@ spec:
     spec:
       containers:
       - name: indexer-save-token-worker
-        image: fcs-master-registry.4bytes.io/daica/4bytes-evm-token-indexer:1.0.4 # Change this to your image
+        image:  fcs-master-registry.4bytes.io/daica/4bytes-evm-bsc-token-indexer:1.0.0 # Change this to your image
         imagePullPolicy: Always
         args: ["SaveToken"]
         resources:
@@ -99,7 +99,7 @@ spec:
     spec:
       containers:
       - name: indexer-save-transfer-event-worker
-        image: fcs-master-registry.4bytes.io/daica/4bytes-evm-token-indexer:1.0.4 # Change this to your image
+        image:  fcs-master-registry.4bytes.io/daica/4bytes-evm-bsc-token-indexer:1.0.0 # Change this to your image
         imagePullPolicy: Always
         args: ["SaveTransferEvent"]
         resources:
