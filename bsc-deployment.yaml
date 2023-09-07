@@ -115,7 +115,7 @@ spec:
 # kind: Deployment
 # metadata:
 #   name: indexer-save-log-worker
-#   namespace: "4bytes-eth-token-indexer"
+#   namespace: "4bytes-bsc-token-indexer"
 # spec:
 #   replicas: 1
 #   selector:
@@ -128,13 +128,13 @@ spec:
 #     spec:
 #       containers:
 #       - name: indexer-save-log-worker
-#         image: fcs-master-registry.4bytes.io/daica/4bytes-evm-token-indexer:1.0.4 # Change this to your image
+#         image:  fcs-master-registry.4bytes.io/daica/4bytes-evm-bsc-token-indexer:1.0.0 # Change this to your image
 #         imagePullPolicy: Always
 #         args: ["SaveLog"]apiVersion: apps/v1
 # kind: Deployment
 # metadata:
 #   name: indexer-save-log-worker
-#   namespace: "4bytes-eth-token-indexer"
+#   namespace: "4bytes-bsc-token-indexer"
 # spec:
 #   replicas: 1
 #   selector:
@@ -147,7 +147,7 @@ spec:
 #     spec:
 #       containers:
 #       - name: indexer-save-log-worker
-#         image: fcs-master-registry.4bytes.io/daica/4bytes-evm-token-indexer:1.0.4 # Change this to your image
+#         image:  fcs-master-registry.4bytes.io/daica/4bytes-evm-bsc-token-indexer:1.0.0 # Change this to your image
 #         imagePullPolicy: Always
 #         args: ["SaveLog"]
 #         resources:
@@ -168,7 +168,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: indexer-save-transaction-worker
-  namespace: "4bytes-eth-token-indexer"
+  namespace: "4bytes-bsc-token-indexer"
 spec:
   replicas: 4
   selector:
@@ -181,7 +181,7 @@ spec:
     spec:
       containers:
       - name: indexer-save-transaction-worker
-        image: fcs-master-registry.4bytes.io/daica/4bytes-evm-token-indexer:1.0.4 # Change this to your image
+        image:  fcs-master-registry.4bytes.io/daica/4bytes-evm-bsc-token-indexer:1.0.0 # Change this to your image
         imagePullPolicy: Always
         args: ["SaveTransaction"]
         resources:
@@ -200,7 +200,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: indexer-save-balance-worker
-  namespace: "4bytes-eth-token-indexer"
+  namespace: "4bytes-bsc-token-indexer"
 spec:
   replicas: 4
   selector:
@@ -213,7 +213,7 @@ spec:
     spec:
       containers:
       - name: indexer-save-balance-worker
-        image: fcs-master-registry.4bytes.io/daica/4bytes-evm-token-indexer:1.0.4 # Change this to your image
+        image:  fcs-master-registry.4bytes.io/daica/4bytes-evm-bsc-token-indexer:1.0.0 # Change this to your image
         imagePullPolicy: Always
         args: ["SaveBalance"]
         resources:
